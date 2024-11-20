@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "tna-flask-application"
+version = "0.1.0"
+description = ""
+authors = ["Andrew Hosgood <andrew.hosgood@nationalarchives.gov.uk>"]
+readme = "README.md"
+packages = [{include = "app"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+flask = "^2.3.2"
+requests = "^2.31.0"
+flask-caching = "^2.1.0"
+tna-frontend-jinja = "0.2.18"
+flask-talisman = "^1.1.0"
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.1.1"
+requests-mock = "^1.12.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 80
+include = '\.pyi?$'
+
+[tool.pytest.ini_options]
+testpaths = [
+    "test",
+]
