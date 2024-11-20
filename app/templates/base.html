@@ -2,7 +2,7 @@
 
 {%- from 'components/cookie-banner/macro.html' import tnaCookieBanner -%}
 {%- from 'components/footer/macro.html' import tnaFooter -%}
-{%- from 'components/header/macro.html' import tnaHeader -%}
+{%- from 'components/global-header/macro.html' import tnaGlobalHeader -%}
 
 {%- set theme = request.cookies.get('theme') or 'system' -%}
 {%- set themeAccent = themeAccent if themeAccent else 'yellow' -%}
@@ -57,12 +57,58 @@
 {% endif %}
 {% endblock %}
 
+
 {% block header %}
-{{ tnaHeader({
+{%- if feature.PHASE_BANNER %}
+{{ tnaPhaseBanner({
+  'phase': 'Beta',
+  'message': 'This is a new service. Help us improve it and <a href="https://www.smartsurvey.co.uk/s/YPVLNT/" target="_blank" rel="noreferrer nofollow">give your feedback (opens in new tab)</a>.',
+  'classes': 'tna-background-contrast'
+}) | indent(6) }}
+{%- endif %}
+{{ tnaGlobalHeader({
   'logo': {
-    'href': url_for('main.index'),
-    'title': 'Service home page'
-  }
+    'href': '/',
+    'title': 'The National Archives home page'
+  },
+  'topNavigation': [
+    {
+      'text': 'Search',
+      'href': url_for('sitemap_search.index'),
+      'icon': 'search'
+    },
+    {
+      'text': 'Shop',
+      'href': 'https://shop.nationalarchives.gov.uk/',
+      'icon': 'shop'
+    },
+  ],
+  'navigation': [
+    {
+      'text': 'Visit',
+      'href': 'https://www.nationalarchives.gov.uk/about/visit-us'
+    },
+    {
+      'text': 'What’s on',
+      'href': 'https://www.nationalarchives.gov.uk/about/visit-us/whats-on/'
+    },
+    {
+      'text': 'Explore the collection',
+      'href': '/explore-the-collection/'
+    },
+    {
+      'text': 'Help using the archive',
+      'href': 'https://www.nationalarchives.gov.uk/help-with-your-research/'
+    },
+    {
+      'text': 'Education',
+      'href': 'https://www.nationalarchives.gov.uk/education/'
+    },
+    {
+      'text': 'Professional guidance and services',
+      'href': 'https://www.nationalarchives.gov.uk/professional-guidance-and-services/'
+    },
+  ]
 }) | indent(6) }}
 {% endblock %}
 

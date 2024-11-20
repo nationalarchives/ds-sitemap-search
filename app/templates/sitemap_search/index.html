@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{%- from 'components/card/macro.html' import tnaCard -%}
+{%- from 'components/compound-filters/macro.html' import tnaCompoundFilters -%}
+{%- from 'components/pagination/macro.html' import tnaPagination -%}
+{%- from 'components/search-field/macro.html' import tnaSearchField -%}
+{%- from 'components/skip-link/macro.html' import tnaSkipLink -%}
+
+{%- set pageTitle = 'Search the sitemaps' -%}
+
+{% block skipLink %}
+{{ super() }}
+{% if q %}
+{{ tnaSkipLink({
+  'href': 'results',
+  'text': 'Skip to list of results'
+}) }}
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="tna-background-accent-light tna-!--padding-top-m tna-!--padding-bottom-l">
+  <div class="tna-container">
+    <form class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny" method="get" action="{{ url_for('sitemap_search.index') }}">
+      {{ tnaSearchField({
+        'label': 'Search The National Archives website',
+        'headingLevel': 1,
+        'headingSize': 'l',
+        'hint': 'Find articles and research guides',
+        'id': 'search',
+        'name': 'q',
+        'value': q
+      }) }}
+      {% if q %}
+      {% endif %}
+    </form>
+  </div>
+</div>
+{% if total_results %}
+<section id="results">
+  {% if total_results %}
+  <div class="tna-container">
+    <div class="tna-column tna-column--full-tiny tna-!--margin-vertical-m">
+      <p>Showing {{ (results_per_page * (page - 1)) + 1 }}&ndash;{{ results_per_page * page if results_per_page * page < total_results else total_results }} of {{ total_results }} results{% if q %} for &quot;{{ q }}&quot;{% endif %}</p>
+    </div>
+  </div>
+  {% endif %}
+  <ul class="tna-container">
+    {% for result in results %}
+    <li class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--width-1-2-small tna-column--full-tiny tna-!--margin-bottom-l">
+      {{ tnaCard({
+        'headingLevel': 2,
+        'headingSize': 'm',
+        'title': result.title,
+        'href': result.url,
+        'body': ('<p>' + result.description + '</p>' if result.description else '') + '<p><small>' + result.url + '</small></p>',
+        'fullAreaClick': True
+      }) }}
+    </li>
+    {% endfor %}
+  </ul>
+  {% if pages > 1 %}
+  <div class="tna-container">
+    <div class="tna-column tna-column--full tna-!--margin-top-l">
+      {{ tnaPagination(pagination) }}
+    </div>
+  </div>
+  {% endif %}
+</section>
+{% elif q %}
+<div class="tna-container tna-!--padding-top-l" id="results">
+  <div class="tna-column tna-column--full">
+    <h2 class="tna-heading-xl">No results found</h2>
+    <p>Try the following:</p>
+    <ul class="tna-ul">
+      <li>Check your spelling</li>
+      <li>Try different keywords</li>
+      <li>Broaden your search keywords</li>
+    </ul>
+  </div>
+</div>
+{% else %}
+<!-- <div class="tna-container tna-!--padding-top-l">
+  <div class="tna-column tna-column--full">
+    <h2 class="tna-heading-xl">Enter a search term</h2>
+  </div>
+</div> -->
+{% endif %}
+{% endblock %}

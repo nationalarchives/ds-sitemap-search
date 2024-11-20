@@ -21,4 +21,4 @@ RUN mkdir /app/app/static/assets; \
 RUN rm -fR /app/src /app/test /app/docs
 
 # Run the application
-CMD ["tna-run", "flask_app:app"]
+CMD ["tna-run", "ds_sitemap_search:app"]

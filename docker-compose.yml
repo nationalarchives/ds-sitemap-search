@@ -13,10 +13,29 @@ services:
       - COOKIE_DOMAIN=localhost
       - CSP_STYLE_SRC='self',fonts.googleapis.com,p.typekit.net,use.typekit.net
       - CSP_FONT_SRC='self',fonts.gstatic.com,use.typekit.net
+      - DB_HOST=db
+      - DB_NAME=postgres
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - SITEMAPS=https://www.nationalarchives.gov.uk/sitemap.xml,https://develop.tna.dblclk.dev/sitemap.xml,https://nationalarchives.github.io/design-system/sitemap.xml
+      - POPULATE_ON_STARTUP=False
     ports:
       - 65525:8080
+    depends_on:
+      - db
     volumes:
       - ./:/app
+
+  db:
+    image: postgres:17
+    environment:
+      - POSTGRES_PASSWORD=postgres
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 65523:8080
 
   dev:
     image: ghcr.io/nationalarchives/tna-python-dev:preview

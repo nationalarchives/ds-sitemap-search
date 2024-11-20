@@ -127,8 +127,10 @@ def create_app(config_class):
 
     from .healthcheck import bp as healthcheck_bp
     from .main import bp as site_bp
+    from .sitemap_search import bp as sitemap_search_bp
 
     app.register_blueprint(site_bp)
     app.register_blueprint(healthcheck_bp, url_prefix="/healthcheck")
+    app.register_blueprint(sitemap_search_bp, url_prefix="/search/sitemap")
 
     return app
