@@ -18,14 +18,14 @@ def index():
         else 1
     )
     results_per_page = 12
+    conn = psycopg2.connect(
+        host=os.environ.get("DB_HOST"),
+        database=os.environ.get("DB_NAME"),
+        user=os.environ.get("DB_USERNAME"),
+        password=os.environ.get("DB_PASSWORD"),
+    )
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     if query:
-        conn = psycopg2.connect(
-            host=os.environ.get("DB_HOST"),
-            database=os.environ.get("DB_NAME"),
-            user=os.environ.get("DB_USERNAME"),
-            password=os.environ.get("DB_PASSWORD"),
-        )
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         title_score = 5
         description_score = 3
         url_score = 2
@@ -51,7 +51,7 @@ def index():
                 url,
                 description,
                 relevance,
-                (SELECT COUNT(*) FROM filtered_scored_results WHERE relevance > 0) as total_results
+                (SELECT COUNT(*) FROM filtered_scored_results WHERE relevance > 0) AS total_results
             FROM filtered_scored_results
             WHERE relevance > 0
             ORDER by relevance DESC
@@ -84,13 +84,17 @@ def index():
             results_per_page=results_per_page,
             pagination=pagination_object(page, pages, request.args),
         )
-    return render_template(
-        "sitemap_search/index.html",
-        q=query,
-        page=page,
-        pages=0,
-        results=[],
-        total_results=0,
-        results_per_page=results_per_page,
-        pagination={},
-    )
+    else:
+        cur.execute("SELECT COUNT(*) AS total_results FROM sitemap_urls")
+        results = cur.fetchall()
+        total_results = results[0]["total_results"] if len(results) else 0
+        return render_template(
+            "sitemap_search/index.html",
+            q=query,
+            page=page,
+            pages=0,
+            results=[],
+            total_results=total_results,
+            results_per_page=results_per_page,
+            pagination={},
+        )

@@ -3,7 +3,7 @@ import logging
 from app.lib.cache import cache
 from app.lib.context_processor import cookie_preference, now_iso_8601
 from app.lib.talisman import talisman
-from app.lib.template_filters import slugify
+from app.lib.template_filters import commafy, slugify
 from flask import Flask
 from jinja2 import ChoiceLoader, PackageLoader
 
@@ -108,6 +108,7 @@ def create_app(config_class):
         ]
     )
 
+    app.add_template_filter(commafy)
     app.add_template_filter(slugify)
 
     @app.context_processor

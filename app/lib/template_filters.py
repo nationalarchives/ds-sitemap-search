@@ -7,3 +7,7 @@ def slugify(s):
     s = re.sub(r"[\s_-]+", "-", s)
     s = re.sub(r"^-+|-+$", "", s)
     return s
+
+
+def commafy(s):
+    return "{:,}".format(s)

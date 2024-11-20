@@ -36,12 +36,12 @@
     </form>
   </div>
 </div>
-{% if total_results %}
+{% if results %}
 <section id="results">
   {% if total_results %}
   <div class="tna-container">
     <div class="tna-column tna-column--full-tiny tna-!--margin-vertical-m">
-      <p>Showing {{ (results_per_page * (page - 1)) + 1 }}&ndash;{{ results_per_page * page if results_per_page * page < total_results else total_results }} of {{ total_results }} results{% if q %} for &quot;{{ q }}&quot;{% endif %}</p>
+      <p>Showing {{ ((results_per_page * (page - 1)) + 1) | commafy }}&ndash;{{ (results_per_page * page if results_per_page * page < total_results else total_results) | commafy }} of {{ total_results | commafy }} results{% if q %} for &quot;{{ q }}&quot;{% endif %}</p>
     </div>
   </div>
   {% endif %}
@@ -80,10 +80,10 @@
   </div>
 </div>
 {% else %}
-<!-- <div class="tna-container tna-!--padding-top-l">
-  <div class="tna-column tna-column--full">
-    <h2 class="tna-heading-xl">Enter a search term</h2>
+<div class="tna-container">
+  <div class="tna-column tna-column--full-tiny tna-!--margin-vertical-m">
+    <p>{{ total_results | commafy }} pages indexed</p>
   </div>
-</div> -->
+</div>
 {% endif %}
 {% endblock %}
