@@ -47,14 +47,18 @@
   {% endif %}
   <ul class="tna-container">
     {% for result in results %}
-    <li class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--width-1-2-small tna-column--full-tiny tna-!--margin-bottom-l">
+    <li class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--width-3-4-small tna-column--full-tiny tna-!--margin-bottom-l">
       {{ tnaCard({
         'headingLevel': 2,
         'headingSize': 'm',
         'title': result.title,
         'href': result.url,
         'body': ('<p>' + result.description + '</p>' if result.description else '') + '<p><small>' + result.url + '</small></p>',
-        'fullAreaClick': True
+        'fullAreaClick': True,
+        'attributes': {
+          'data-id': result.id,
+          'data-relevance': result.relevance
+        }
       }) }}
     </li>
     {% endfor %}

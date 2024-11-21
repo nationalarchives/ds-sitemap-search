@@ -1,1 +1,7 @@
 @use "@nationalarchives/frontend/nationalarchives/all";
+
+.tna-card {
+  &__body {
+    word-break: break-word;
+  }
+}
