@@ -82,12 +82,14 @@ def populate():
     cur = conn.cursor()
     # cur.execute("DROP TABLE IF EXISTS sitemap_urls;")
     cur.execute(
-        "CREATE TABLE IF NOT EXISTS sitemap_urls (id serial PRIMARY KEY,"
-        "title varchar (500),"
-        "description text,"
-        "url varchar (500) NOT NULL,"
-        "body text,"
-        "date_added timestamp DEFAULT CURRENT_TIMESTAMP);"
+        """CREATE TABLE IF NOT EXISTS sitemap_urls (
+            id serial PRIMARY KEY,
+            title varchar (500),
+            description text,
+            url varchar (500) NOT NULL,
+            body text,
+            date_added timestamp DEFAULT CURRENT_TIMESTAMP
+        );"""
     )
     conn.commit()
     sitemaps = os.getenv("SITEMAPS", "").split(",")
