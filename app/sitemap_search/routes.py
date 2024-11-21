@@ -42,6 +42,7 @@ def index():
                     /*(%(url_score)s * ((CHAR_LENGTH(url) - CHAR_LENGTH(REPLACE(LOWER(url), %(query)s, ''))) / CHAR_LENGTH(%(query)s))) +*/
                     (%(body_instance_score)s * ((CHAR_LENGTH(body) - CHAR_LENGTH(REPLACE(LOWER(body), %(query)s, ''))) / CHAR_LENGTH(%(query)s))) AS relevance
                 FROM sitemap_urls
+                WHERE title IS NOT NULL
             ), filtered_scored_results AS (
                 SELECT
                     id,
