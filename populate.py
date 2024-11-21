@@ -80,9 +80,9 @@ def populate():
         password=os.environ.get("DB_PASSWORD"),
     )
     cur = conn.cursor()
-    cur.execute("DROP TABLE IF EXISTS sitemap_urls;")
+    # cur.execute("DROP TABLE IF EXISTS sitemap_urls;")
     cur.execute(
-        "CREATE TABLE sitemap_urls (id serial PRIMARY KEY,"
+        "CREATE TABLE IF NOT EXISTS sitemap_urls (id serial PRIMARY KEY,"
         "title varchar (500),"
         "description text,"
         "url varchar (500) NOT NULL,"
