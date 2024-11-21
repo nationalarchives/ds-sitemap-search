@@ -19,6 +19,12 @@ To add back in the static assets, run:
 docker compose exec app cp -r /app/node_modules/@nationalarchives/frontend/nationalarchives/assets /app/app/static
 ```
 
+### Initial population
+
+```sh
+docker compose exec app poetry run python populate.py
+```
+
 ### Run tests
 
 ```sh
