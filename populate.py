@@ -74,6 +74,10 @@ def get_urls_from_sitemap(sitemap_url):
     sys.exit(1)
 
 
+def padded_enumeration(number, total):
+    return f"[{str(number).rjust(len(str(total)), " ")}/{total}]"
+
+
 def populate():
     conn = psycopg2.connect(
         host=os.environ.get("DB_HOST"),
@@ -106,38 +110,42 @@ def populate():
         urls = get_urls_from_sitemap(sitemap)
         for index, url in enumerate(urls):
             if url not in existing_urls:
-                html = requests.get(url).text
-                soup = BeautifulSoup(html, "lxml")
-                title = soup.title
-                title = (
-                    re.sub(r" - The National Archives$", "", title.text)
-                    if title
-                    else None
-                )
-                description = soup.find(
-                    "meta", attrs={"property": "og:description"}
-                ) or soup.find("meta", attrs={"name": "description"})
-                description = (
-                    description.attrs["content"]
-                    if description and "content" in description.attrs
-                    else None
-                )
-                body = soup.find("main") or soup.find(role="main") or soup.body
-                body = (
-                    re.sub(r"\n+\s*", "\n", body.text).strip() if body else ""
-                )
-                print(
-                    f"[{str(index + 1).rjust(len(str(len(urls))), " ")}/{len(urls)}] {url}"
-                )
-                existing_urls.append(url)
-                cur.execute(
-                    "INSERT INTO sitemap_urls (title, url, description, body) VALUES (%s, %s, %s, %s);",
-                    (title, url, description, body),
-                )
-                conn.commit()
+                response = requests.get(url)
+                if response.ok:
+                    html = response.text
+                    soup = BeautifulSoup(html, "lxml")
+                    title = soup.title
+                    title = title.text if title else None
+                    description = soup.find(
+                        "meta", attrs={"property": "og:description"}
+                    ) or soup.find("meta", attrs={"name": "description"})
+                    description = (
+                        description.attrs["content"]
+                        if description and "content" in description.attrs
+                        else None
+                    )
+                    body = (
+                        soup.find("main") or soup.find(role="main") or soup.body
+                    )
+                    body = (
+                        re.sub(r"\n+\s*", "\n", body.text).strip()
+                        if body
+                        else ""
+                    )
+                    print(f"{padded_enumeration(index + 1, len(urls))} {url}")
+                    existing_urls.append(url)
+                    cur.execute(
+                        "INSERT INTO sitemap_urls (title, url, description, body) VALUES (%s, %s, %s, %s);",
+                        (title, url, description, body),
+                    )
+                    conn.commit()
+                else:
+                    print(
+                        f"{padded_enumeration(index + 1, len(urls))} {url} - Error: {response.status_code}"
+                    )
             else:
                 print(
-                    f"[{str(index + 1).rjust(len(str(len(urls))), " ")}/{len(urls)}] {url} - DONE"
+                    f"{padded_enumeration(index + 1, len(urls))} {url} - DONE"
                 )
     cur.close()
     conn.close()
