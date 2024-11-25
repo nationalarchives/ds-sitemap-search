@@ -4,12 +4,15 @@ from urllib.parse import unquote
 
 import psycopg2
 import psycopg2.extras
+from app.lib.cache import cache
+from app.lib.cache_key_prefix import cache_key_prefix
 from app.lib.pagination import pagination_object
 from app.sitemap_search import bp
 from flask import render_template, request
 
 
 @bp.route("/")
+@cache.cached(key_prefix=cache_key_prefix)
 def index():
     query = unquote(request.args.get("q", "")).strip(" ").lower()
     page = (
