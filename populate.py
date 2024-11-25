@@ -6,8 +6,18 @@ import urllib.request
 import xml.etree.ElementTree as ET
 
 import psycopg2
+import psycopg2.extras
 import requests
 from bs4 import BeautifulSoup
+
+
+def fix_url(url):
+    url = re.sub(
+        "http://website.live.local",
+        "https://www.nationalarchives.gov.uk",
+        url,
+    )
+    return url
 
 
 def parse_sitemap(sitemap_xml):
@@ -23,11 +33,7 @@ def parse_sitemap(sitemap_xml):
                         == "{http://www.sitemaps.org/schemas/sitemap/0.9}loc"
                     ):
                         url = loc.text
-                        url = re.sub(
-                            "http://website.live.local",
-                            "https://www.nationalarchives.gov.uk",
-                            url,
-                        )
+                        url = fix_url(url)
                         urls.append(url)
     elif sitemap_xml is not None and (
         sitemap_xml.tag
@@ -44,11 +50,7 @@ def parse_sitemap(sitemap_xml):
                         == "{http://www.sitemaps.org/schemas/sitemap/0.9}loc"
                     ):
                         url = loc.text
-                        url = re.sub(
-                            "http://website.live.local",
-                            "https://www.nationalarchives.gov.uk",
-                            url,
-                        )
+                        url = fix_url(url)
                         if " " not in url:
                             urls = urls + get_urls_from_sitemap(url)
     return urls
@@ -79,7 +81,8 @@ def populate():
         user=os.environ.get("DB_USERNAME"),
         password=os.environ.get("DB_PASSWORD"),
     )
-    cur = conn.cursor()
+
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     # cur.execute("DROP TABLE IF EXISTS sitemap_urls;")
     cur.execute(
         """CREATE TABLE IF NOT EXISTS sitemap_urls (
@@ -88,16 +91,21 @@ def populate():
             description text,
             url varchar (500) NOT NULL,
             body text,
-            date_added timestamp DEFAULT CURRENT_TIMESTAMP
+            date_added timestamp DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(url)
         );"""
     )
     conn.commit()
+
+    cur.execute("SELECT url FROM sitemap_urls;")
+    existing_urls = cur.fetchall()
+    existing_urls = [result["url"] for result in existing_urls]
+
     sitemaps = os.getenv("SITEMAPS", "").split(",")
     for sitemap in sitemaps:
         urls = get_urls_from_sitemap(sitemap)
-        urls_checked = []
         for index, url in enumerate(urls):
-            if url not in urls_checked:
+            if url not in existing_urls:
                 html = requests.get(url).text
                 soup = BeautifulSoup(html, "lxml")
                 title = soup.title
@@ -121,12 +129,16 @@ def populate():
                 print(
                     f"[{str(index + 1).rjust(len(str(len(urls))), " ")}/{len(urls)}] {url}"
                 )
-                urls_checked.append(url)
+                existing_urls.append(url)
                 cur.execute(
                     "INSERT INTO sitemap_urls (title, url, description, body) VALUES (%s, %s, %s, %s);",
                     (title, url, description, body),
                 )
                 conn.commit()
+            else:
+                print(
+                    f"[{str(index + 1).rjust(len(str(len(urls))), " ")}/{len(urls)}] {url} - DONE"
+                )
     cur.close()
     conn.close()
 
