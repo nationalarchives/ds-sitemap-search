@@ -51,7 +51,7 @@
       {{ tnaCard({
         'headingLevel': 2,
         'headingSize': 'm',
-        'title': result.title,
+        'title': result.title.replace(' - The National Archives blog', '').replace(' - The National Archives', ''),
         'href': result.url,
         'body': ('<p>' + result.description + '</p>' if result.description else '') + '<p><small>' + result.url + '</small></p>',
         'fullAreaClick': True,
