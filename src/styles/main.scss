@@ -4,7 +4,9 @@
 
 .tna-card {
   &__body {
-    word-break: break-word;
+    small {
+      word-break: break-all;
+    }
   }
 
   &:not(:has(&__image-container)) {
