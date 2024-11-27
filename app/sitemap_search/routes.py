@@ -8,7 +8,7 @@ from app.lib.cache import cache
 from app.lib.cache_key_prefix import cache_key_prefix
 from app.lib.pagination import pagination_object
 from app.sitemap_search import bp
-from flask import render_template, request
+from flask import current_app, render_template, request
 
 
 @bp.route("/")
@@ -21,6 +21,9 @@ def index():
         else 1
     )
     results_per_page = 12
+    webarchive_domains = current_app.config.get(
+        "FEATURE_WEBARCHIVE_REWRITE_DOMAINS"
+    )
     conn = psycopg2.connect(
         host=os.environ.get("DB_HOST"),
         database=os.environ.get("DB_NAME"),
@@ -93,6 +96,7 @@ def index():
             total_results=total_results,
             results_per_page=results_per_page,
             pagination=pagination_object(page, pages, request.args),
+            webarchive_domains=webarchive_domains,
         )
     else:
         cur.execute("SELECT COUNT(*) AS total_results FROM sitemap_urls")
@@ -107,4 +111,5 @@ def index():
             total_results=total_results,
             results_per_page=results_per_page,
             pagination={},
+            webarchive_domains=webarchive_domains,
         )

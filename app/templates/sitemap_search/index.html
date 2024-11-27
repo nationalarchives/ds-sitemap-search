@@ -47,12 +47,20 @@
   {% endif %}
   <ul class="tna-container">
     {% for result in results %}
+    {% set ns = namespace(result_url=result.url, supertitle='') %}
     <li class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--width-3-4-small tna-column--full-tiny tna-!--margin-bottom-l">
+      {% for domain in webarchive_domains %}
+        {% if domain in result.url %}
+          {% set ns.result_url = 'https://webarchive.nationalarchives.gov.uk/ukgwa/+/' + result.url %}
+          {% set ns.supertitle = 'Archived' %}
+        {% endif %}
+      {% endfor %}
       {{ tnaCard({
+        'supertitle': ns.supertitle,
         'headingLevel': 2,
         'headingSize': 'm',
         'title': result.title.replace(', Author at The National Archives blog', '').replace(' - The National Archives blog', '').replace(' - The National Archives Design System', '').replace(' - The National Archives', ''),
-        'href': result.url,
+        'href': ns.result_url,
         'body': ('<p>' + result.description + '</p>' if result.description and result.description != '...' else '') + '<p><small>' + result.url + '</small></p>',
         'fullAreaClick': True,
         'attributes': {

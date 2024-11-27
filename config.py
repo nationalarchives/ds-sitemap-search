@@ -5,7 +5,9 @@ from app.lib.util import strtobool
 
 
 class Features(object):
-    pass
+    FEATURE_WEBARCHIVE_REWRITE_DOMAINS: list[str] = os.environ.get(
+        "FEATURE_WEBARCHIVE_REWRITE_DOMAINS", ""
+    ).split(",")
 
 
 class Base(object):
