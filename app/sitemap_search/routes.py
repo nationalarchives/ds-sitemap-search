@@ -14,16 +14,14 @@ from flask import current_app, render_template, request
 @bp.route("/")
 @cache.cached(key_prefix=cache_key_prefix)
 def index():
-    query = unquote(request.args.get("q", "")).strip(" ").lower()
+    query = unquote(request.args.get("q", "")).strip(" ")
     page = (
         int(request.args.get("page"))
         if request.args.get("page") and request.args.get("page").isnumeric()
         else 1
     )
     results_per_page = 12
-    webarchive_domains = current_app.config.get(
-        "FEATURE_WEBARCHIVE_REWRITE_DOMAINS"
-    )
+    webarchive_domains = current_app.config.get("WEBARCHIVE_REWRITE_DOMAINS")
     conn = psycopg2.connect(
         host=os.environ.get("DB_HOST"),
         database=os.environ.get("DB_NAME"),
@@ -32,10 +30,13 @@ def index():
     )
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     if query:
-        title_score = 5
-        description_score = 3
-        url_score = 2
-        body_instance_score = 1
+        title_match_weight = current_app.config.get(
+            "RELEVANCE_TITLE_MATCH_WEIGHT"
+        )
+        body_match_weight = current_app.config.get(
+            "RELEVANCE_BODY_MATCH_WEIGHT"
+        )
+        archived_weight = current_app.config.get("RELEVANCE_ARCHIVED_WEIGHT")
         cur.execute(
             """WITH scored_results AS (
                 SELECT
@@ -43,20 +44,28 @@ def index():
                     title,
                     url,
                     description,
-                    (%(title_score)s * ((CHAR_LENGTH(title) - CHAR_LENGTH(REPLACE(LOWER(title), %(query)s, ''))) / CHAR_LENGTH(%(query)s))) +
-                    /*(%(description_score)s * ((CHAR_LENGTH(description) - CHAR_LENGTH(REPLACE(LOWER(description), %(query)s, ''))) / CHAR_LENGTH(%(query)s))) +*/
-                    /*(%(url_score)s * ((CHAR_LENGTH(url) - CHAR_LENGTH(REPLACE(LOWER(url), %(query)s, ''))) / CHAR_LENGTH(%(query)s))) +*/
-                    (%(body_instance_score)s * ((CHAR_LENGTH(body) - CHAR_LENGTH(REPLACE(LOWER(body), %(query)s, ''))) / CHAR_LENGTH(%(query)s))) AS relevance
+                    (
+                        (
+                            (
+                                CHAR_LENGTH(title) -
+                                CHAR_LENGTH(REPLACE(LOWER(title), %(query)s, ''))
+                            ) * %(title_match_weight)s
+                        ) +
+                        (
+                            (
+                                CHAR_LENGTH(body) -
+                                CHAR_LENGTH(REPLACE(LOWER(body), %(query)s, ''))
+                            ) * %(body_match_weight)s
+                        )
+                    ) *
+                    (
+                        CASE
+                            WHEN url LIKE %(webarchive_domains)s THEN %(archived_weight)s
+                            ELSE 1
+                        END
+                    ) AS relevance
                 FROM sitemap_urls
                 WHERE title IS NOT NULL
-            ), filtered_scored_results AS (
-                SELECT
-                    id,
-                    title,
-                    url,
-                    description,
-                    relevance
-                FROM scored_results
             )
             SELECT
                 id,
@@ -64,22 +73,26 @@ def index():
                 url,
                 description,
                 relevance,
-                (SELECT COUNT(*) FROM filtered_scored_results WHERE relevance > 0) AS total_results
-            FROM filtered_scored_results
+                (SELECT COUNT(*) FROM scored_results WHERE relevance > 0) AS total_results
+            FROM scored_results
             WHERE relevance > 0
             ORDER by relevance DESC
             LIMIT %(limit)s
             OFFSET %(offset)s;""",
             {
-                "query": query,
-                "title_score": title_score,
-                "url_score": url_score,
-                "description_score": description_score,
-                "body_instance_score": body_instance_score,
+                "query": query.lower(),
+                "query_length": len(query),
+                "title_match_weight": title_match_weight,
+                "body_match_weight": body_match_weight,
+                "archived_weight": archived_weight,
                 "limit": results_per_page,
                 "offset": (page - 1) * results_per_page,
+                "webarchive_domains": "|".join(
+                    [f"%{domain}%" for domain in webarchive_domains]
+                ),
             },
         )
+        # return cur.query
         results = cur.fetchall()
         total_results = results[0]["total_results"] if len(results) else 0
         pages = math.ceil(total_results / results_per_page)

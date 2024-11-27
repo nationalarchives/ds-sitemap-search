@@ -5,9 +5,7 @@ from app.lib.util import strtobool
 
 
 class Features(object):
-    FEATURE_WEBARCHIVE_REWRITE_DOMAINS: list[str] = os.environ.get(
-        "FEATURE_WEBARCHIVE_REWRITE_DOMAINS", ""
-    ).split(",")
+    pass
 
 
 class Base(object):
@@ -80,7 +78,25 @@ class Base(object):
     CACHE_IGNORE_ERRORS: bool = True
     CACHE_DIR: str = os.environ.get("CACHE_DIR", "/tmp")
 
-    GA4_ID = os.environ.get("GA4_ID", "")
+    GA4_ID: str = os.environ.get("GA4_ID", "")
+
+    WEBARCHIVE_REWRITE_DOMAINS: list[str] = [
+        domain
+        for domain in os.environ.get("WEBARCHIVE_REWRITE_DOMAINS", "").split(
+            ","
+        )
+        if domain
+    ]
+
+    RELEVANCE_TITLE_MATCH_WEIGHT: float = float(
+        os.environ.get("RELEVANCE_TITLE_MATCH_WEIGHT", "5")
+    )
+    RELEVANCE_BODY_MATCH_WEIGHT: float = float(
+        os.environ.get("RELEVANCE_BODY_MATCH_WEIGHT", "1")
+    )
+    RELEVANCE_ARCHIVED_WEIGHT: float = float(
+        os.environ.get("RELEVANCE_ARCHIVED_WEIGHT", "0.5")
+    )
 
 
 class Production(Base, Features):
