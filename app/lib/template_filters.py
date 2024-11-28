@@ -11,3 +11,8 @@ def slugify(s):
 
 def commafy(s):
     return "{:,}".format(s)
+
+
+def mark(s, substring):
+    compiled = re.compile(f"({substring})", re.IGNORECASE)
+    return compiled.sub(r"<mark>\g<0></mark>", s)

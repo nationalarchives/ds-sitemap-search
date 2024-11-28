@@ -1,11 +1,23 @@
+@use "@nationalarchives/frontend/nationalarchives/tools/colour";
 @use "@nationalarchives/frontend/nationalarchives/tools/spacing";
 
 @use "@nationalarchives/frontend/nationalarchives/all";
 
 .tna-card {
   &__body {
+    gap: spacing.space(0.5);
+
     small {
-      word-break: break-all;
+      @include colour.colour-font("font-light");
+    }
+
+    p {
+      word-break: break-word;
+
+      &:has(small) {
+        line-height: 1.2;
+        word-break: break-all;
+      }
     }
   }
 
@@ -17,4 +29,8 @@
       float: right;
     }
   }
+}
+
+mark {
+  @include colour.accent;
 }
