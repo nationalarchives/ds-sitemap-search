@@ -9,7 +9,7 @@ from jinja2 import ChoiceLoader, PackageLoader
 
 
 def create_app(config_class):
-    app = Flask(__name__, static_url_path="/static")
+    app = Flask(__name__, static_url_path="/search/sitemap/static")
     app.config.from_object(config_class)
 
     gunicorn_error_logger = logging.getLogger("gunicorn.error")
