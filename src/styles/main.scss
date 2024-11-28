@@ -4,6 +4,10 @@
 @use "@nationalarchives/frontend/nationalarchives/all";
 
 .tna-card {
+  .tna-hgroup__supertitle {
+    @include colour.orange-accent;
+  }
+
   &__body {
     gap: spacing.space(0.5);
 
