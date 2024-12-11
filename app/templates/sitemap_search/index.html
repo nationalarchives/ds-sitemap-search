@@ -11,12 +11,12 @@
 {%- set pageTitle = 'Search results for "' + q + '"' if q else 'Search the site' -%}
 
 {% block skipLink %}
-{{ super() }}
 {% if q %}
 {{ tnaSkipLink({
   'href': 'results',
   'text': 'Skip to list of results'
 }) }}
+{{ super() }}
 {% endif %}
 {% endblock %}
 
@@ -37,16 +37,14 @@
   </div>
 </div>
 {% if results %}
-<section id="results">
+<section>
   <div class="tna-container">
-    <div class="tna-column tna-column--width-2-3 tna-column--full-small tna-column--full-tiny tna-!--margin-top-l">
-      {% if total_results %}
-      <p>Showing {{ ((results_per_page * (page - 1)) + 1) | commafy }}&ndash;{{ (results_per_page * page if results_per_page * page < total_results else total_results) | commafy }} of {{ total_results | commafy }} results{% if q %} for &quot;{{ q }}&quot;{% endif %}</p>
-      {% endif %}
-      <ul class="tna-container tna-container--nested tna-!--margin-bottom-l">
+    <div class="tna-column tna-column--width-2-3 tna-column--full-small tna-column--full-tiny tna-!--padding-top-s">
+      <p id="results" class="tna-!--padding-top-s">Showing {{ ((results_per_page * (page - 1)) + 1) | commafy }}&ndash;{{ (results_per_page * page if results_per_page * page < total_results else total_results) | commafy }} of {{ total_results | commafy }} results{% if q %} for &quot;{{ q }}&quot;{% endif %}</p>
+      <ul class="tna-container tna-container--nested tna-!--margin-top-m">
         {% for result in results %}
         {% set ns = namespace(result_url=result.url, supertitle='') %}
-        <li class="tna-column tna-column--full tna-!--margin-top-l">
+        <li class="tna-column tna-column--full tna-!--margin-bottom-l">
           {% for domain in webarchive_domains %}
             {% if domain in result.url %}
               {% set ns.result_url = 'https://webarchive.nationalarchives.gov.uk/ukgwa/+/' + result.url %}
@@ -79,9 +77,9 @@
   </div>
 </section>
 {% elif q %}
-<div class="tna-container tna-!--padding-top-l" id="results">
+<div class="tna-container tna-!--padding-top-l">
   <div class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny">
-    <h2 class="tna-heading-xl">No results found</h2>
+    <h2 class="tna-heading-xl" id="results">No results found</h2>
     <p>Try the following:</p>
     <ul class="tna-ul">
       <li>Check your spelling</li>
