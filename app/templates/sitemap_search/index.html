@@ -39,8 +39,9 @@
 {% if results %}
 <section>
   <div class="tna-container">
-    <div class="tna-column tna-column--width-2-3 tna-column--full-small tna-column--full-tiny tna-!--padding-top-s">
-      <p id="results" class="tna-!--padding-top-s">Showing {{ ((results_per_page * (page - 1)) + 1) | commafy }}&ndash;{{ (results_per_page * page if results_per_page * page < total_results else total_results) | commafy }} of {{ total_results | commafy }} results{% if q %} for &quot;{{ q }}&quot;{% endif %}</p>
+    <div id="results" class="tna-column tna-column--width-2-3 tna-column--full-small tna-column--full-tiny tna-!--margin-top-s">
+      <h2 class="tna-visually-hidden">Results</h2>
+      <p class="tna-!--no-margin-top tna-!--padding-top-s">Showing {{ ((results_per_page * (page - 1)) + 1) | commafy }}&ndash;{{ (results_per_page * page if results_per_page * page < total_results else total_results) | commafy }} of {{ total_results | commafy }} results{% if q %} for &quot;{{ q }}&quot;{% endif %}</p>
       <ul class="tna-container tna-container--nested tna-!--margin-top-m">
         {% for result in results %}
         {% set ns = namespace(result_url=result.url, supertitle='') %}
@@ -53,7 +54,7 @@
           {% endfor %}
           {{ tnaCard({
             'supertitle': ns.supertitle,
-            'headingLevel': 2,
+            'headingLevel': 3,
             'headingSize': 'm',
             'title': result.title.replace(', Author at The National Archives blog', '').replace(' - The National Archives blog', '').replace(' - The National Archives Design System', '').replace(' - The National Archives', '') | mark(q) | safe,
             'href': ns.result_url,
