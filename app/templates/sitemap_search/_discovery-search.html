@@ -1,0 +1,27 @@
+{%- from 'components/search-field/macro.html' import tnaSearchField -%}
+
+{% macro discoverySearch(query) %}
+<form class="tna-aside tna-aside--tight tna-background-tint" method="get" action="https://discovery.nationalarchives.gov.uk/results/r">
+  <!-- {{ tnaSearchField({
+    'label': 'Looking for particular records? Search our catalogue',
+    'headingLevel': 2,
+    'headingSize': 'm',
+    'hint': 'Our catalogue, Discovery, holds more than 37 million descriptions of records held by The National Archives and archives across the country.',
+    'id': 'search-discovery',
+    'name': '_q',
+    'value': query,
+    'formGroupClasses': 'discovery-search'
+  }) }} -->
+  <h2 class="tna-heading-m">Looking for particular records? Search our catalogue</h2>
+  <p>Our catalogue, Discovery, holds more than 37 million descriptions of records held by The National Archives and archives across the country.</p>
+  {% if query %}
+  <p>
+    <a href="https://discovery.nationalarchives.gov.uk/results/r?_q={{ query }}">Search for &quot;{{ query }}&quot; in Discovery</a>
+  </p>
+  {% else %}
+  <p>
+    <a href="https://discovery.nationalarchives.gov.uk/">Go to Discovery</a>
+  </p>
+  {% endif %}
+</form>
+{% endmacro %}

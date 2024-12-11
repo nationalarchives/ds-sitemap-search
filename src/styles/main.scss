@@ -1,4 +1,6 @@
+@use "@nationalarchives/frontend/nationalarchives/variables/forms";
 @use "@nationalarchives/frontend/nationalarchives/tools/colour";
+@use "@nationalarchives/frontend/nationalarchives/tools/media";
 @use "@nationalarchives/frontend/nationalarchives/tools/spacing";
 
 @use "@nationalarchives/frontend/nationalarchives/all";
@@ -31,6 +33,24 @@
       margin-left: spacing.space(2);
 
       float: right;
+    }
+  }
+}
+
+.discovery-search {
+  .tna-search-field {
+    @include media.on-medium {
+      &__fields {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      &__input {
+        width: auto;
+        border-bottom: none;
+
+        border-right-width: forms.$form-field-border-width;
+      }
     }
   }
 }

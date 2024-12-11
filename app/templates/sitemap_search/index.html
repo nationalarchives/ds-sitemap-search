@@ -6,7 +6,9 @@
 {%- from 'components/search-field/macro.html' import tnaSearchField -%}
 {%- from 'components/skip-link/macro.html' import tnaSkipLink -%}
 
-{%- set pageTitle = 'Search the sitemaps' -%}
+{%- from 'sitemap_search/_discovery-search.html' import discoverySearch -%}
+
+{%- set pageTitle = 'Search results for "' + q + '"' if q else 'Search the site' -%}
 
 {% block skipLink %}
 {{ super() }}
@@ -31,57 +33,54 @@
         'name': 'q',
         'value': q
       }) }}
-      {% if q %}
-      {% endif %}
     </form>
   </div>
 </div>
 {% if results %}
 <section id="results">
-  {% if total_results %}
   <div class="tna-container">
-    <div class="tna-column tna-column--full-tiny tna-!--margin-vertical-m">
+    <div class="tna-column tna-column--width-2-3 tna-column--full-small tna-column--full-tiny tna-!--margin-top-l">
+      {% if total_results %}
       <p>Showing {{ ((results_per_page * (page - 1)) + 1) | commafy }}&ndash;{{ (results_per_page * page if results_per_page * page < total_results else total_results) | commafy }} of {{ total_results | commafy }} results{% if q %} for &quot;{{ q }}&quot;{% endif %}</p>
-    </div>
-  </div>
-  {% endif %}
-  <ul class="tna-container">
-    {% for result in results %}
-    {% set ns = namespace(result_url=result.url, supertitle='') %}
-    <li class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--width-3-4-small tna-column--full-tiny tna-!--margin-bottom-l">
-      {% for domain in webarchive_domains %}
-        {% if domain in result.url %}
-          {% set ns.result_url = 'https://webarchive.nationalarchives.gov.uk/ukgwa/+/' + result.url %}
-          {% set ns.supertitle = 'Archived' %}
-        {% endif %}
-      {% endfor %}
-      {{ tnaCard({
-        'supertitle': ns.supertitle,
-        'headingLevel': 2,
-        'headingSize': 'm',
-        'title': result.title.replace(', Author at The National Archives blog', '').replace(' - The National Archives blog', '').replace(' - The National Archives Design System', '').replace(' - The National Archives', '') | mark(q) | safe,
-        'href': ns.result_url,
-        'body': ('<p>' + (result.description | mark(q)) + '</p>' if result.description and result.description != '...' else '') + '<p><small>' + result.url + '</small></p>',
-        'fullAreaClick': True,
-        'attributes': {
-          'data-id': result.id,
-          'data-relevance': result.relevance
-        }
-      }) }}
-    </li>
-    {% endfor %}
-  </ul>
-  {% if pages > 1 %}
-  <div class="tna-container">
-    <div class="tna-column tna-column--full tna-!--margin-top-l">
+      {% endif %}
+      <ul class="tna-container tna-container--nested tna-!--margin-bottom-l">
+        {% for result in results %}
+        {% set ns = namespace(result_url=result.url, supertitle='') %}
+        <li class="tna-column tna-column--full tna-!--margin-top-l">
+          {% for domain in webarchive_domains %}
+            {% if domain in result.url %}
+              {% set ns.result_url = 'https://webarchive.nationalarchives.gov.uk/ukgwa/+/' + result.url %}
+              {% set ns.supertitle = 'Archived' %}
+            {% endif %}
+          {% endfor %}
+          {{ tnaCard({
+            'supertitle': ns.supertitle,
+            'headingLevel': 2,
+            'headingSize': 'm',
+            'title': result.title.replace(', Author at The National Archives blog', '').replace(' - The National Archives blog', '').replace(' - The National Archives Design System', '').replace(' - The National Archives', '') | mark(q) | safe,
+            'href': ns.result_url,
+            'body': ('<p>' + (result.description | mark(q)) + '</p>' if result.description and result.description != '...' else '') + '<p><small>' + result.url + '</small></p>',
+            'fullAreaClick': True,
+            'attributes': {
+              'data-id': result.id,
+              'data-relevance': result.relevance
+            }
+          }) }}
+        </li>
+        {% endfor %}
+      </ul>
+      {% if pages > 1 %}
       {{ tnaPagination(pagination) }}
+      {% endif %}
+    </div>
+    <div class="tna-column tna-column--width-1-3 tna-column--full-small tna-column--full-tiny tna-!--margin-top-l">
+      {{ discoverySearch(q) }}
     </div>
   </div>
-  {% endif %}
 </section>
 {% elif q %}
 <div class="tna-container tna-!--padding-top-l" id="results">
-  <div class="tna-column tna-column--full">
+  <div class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny">
     <h2 class="tna-heading-xl">No results found</h2>
     <p>Try the following:</p>
     <ul class="tna-ul">
@@ -89,12 +88,14 @@
       <li>Try different keywords</li>
       <li>Broaden your search keywords</li>
     </ul>
+    {{ discoverySearch(q) }}
   </div>
 </div>
 {% else %}
 <div class="tna-container">
-  <div class="tna-column tna-column--full-tiny tna-!--margin-vertical-m">
+  <div class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--margin-vertical-m">
     <p>{{ total_results | commafy }} pages indexed</p>
+    {{ discoverySearch(q) }}
   </div>
 </div>
 {% endif %}
