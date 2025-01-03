@@ -1,7 +1,7 @@
 {%- from 'components/search-field/macro.html' import tnaSearchField -%}
 
 {% macro discoverySearch(query) %}
-<form class="tna-aside tna-aside--tight tna-background-tint" method="get" action="https://discovery.nationalarchives.gov.uk/results/r">
+<form class="tna-aside tna-aside--tight tna-background-tint" method="get" action="https://discovery.nationalarchives.gov.uk/results/r" role="search">
   <!-- {{ tnaSearchField({
     'label': 'Looking for particular records? Search our catalogue',
     'headingLevel': 2,
