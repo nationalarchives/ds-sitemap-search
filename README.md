@@ -41,13 +41,13 @@ docker compose exec dev format
 
 In addition to the [base Docker image variables](https://github.com/nationalarchives/docker/blob/main/docker/tna-python/README.md#environment-variables), this application has support for:
 
-| Variable                         | Purpose                                                                       | Default                                                     |
-| -------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| `CONFIG`                         | The configuration to use                                                      | `config.Production`                                         |
-| `DEBUG`                          | If true, allow debugging[^1]                                                  | `False`                                                     |
-| `SENTRY_DSN`                     | The Sentry DSN (project code)                                                 | _none_                                                      |
-| `SENTRY_JS_ID`                   | The ID of the Sentry client project to catch issues                           | _none_                                                      |
-| `SENTRY_SAMPLE_RATE`             | How often to sample traces and profiles (0-1.0)                               | production: `0.1`, staging: `0.25`, develop: `1`, test: `0` |
+| Variable                         | Purpose                                                                       | Default                                                   |
+| -------------------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `CONFIG`                         | The configuration to use                                                      | `config.Production`                                       |
+| `DEBUG`                          | If true, allow debugging[^1]                                                  | `False`                                                   |
+| `SENTRY_DSN`                     | The Sentry DSN (project code)                                                 | _none_                                                    |
+| `SENTRY_JS_ID`                   | The ID of the Sentry client project to catch issues                           | _none_                                                    |
+| `SENTRY_SAMPLE_RATE`             | How often to sample traces and profiles (0-1.0)                               | production: `0.1`, staging: `1`, develop: `0`, test: `0`  |
 | `COOKIE_DOMAIN`                  | The domain to save cookie preferences against                                 | _none_                                                    |
 | `CSP_IMG_SRC`                    | A comma separated list of CSP rules for `img-src`                             | `'self'`                                                  |
 | `CSP_SCRIPT_SRC`                 | A comma separated list of CSP rules for `script-src`                          | `'self'`                                                  |
