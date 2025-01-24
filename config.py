@@ -9,7 +9,7 @@ class Features(object):
 
 
 class Base(object):
-    ENVIRONMENT: str = os.environ.get("ENVIRONMENT", "production")
+    ENVIRONMENT_NAME: str = os.environ.get("ENVIRONMENT_NAME", "production")
 
     BUILD_VERSION: str = os.environ.get("BUILD_VERSION", "")
     TNA_FRONTEND_VERSION: str = ""
@@ -32,6 +32,10 @@ class Base(object):
     SECRET_KEY: str = os.environ.get("SECRET_KEY", "")
 
     DEBUG: bool = strtobool(os.getenv("DEBUG", "False"))
+
+    SENTRY_DSN: str = os.getenv("SENTRY_DSN", "")
+    SENTRY_JS_ID: str = os.getenv("SENTRY_JS_ID", "")
+    SENTRY_SAMPLE_RATE: float = float(os.getenv("SENTRY_SAMPLE_RATE", "0.1"))
 
     COOKIE_DOMAIN: str = os.environ.get("COOKIE_DOMAIN", "")
 
@@ -73,7 +77,7 @@ class Base(object):
 
     CACHE_TYPE: str = "FileSystemCache"
     CACHE_DEFAULT_TIMEOUT: int = int(
-        os.environ.get("CACHE_DEFAULT_TIMEOUT", "1")
+        os.environ.get("CACHE_DEFAULT_TIMEOUT", "300")
     )
     CACHE_IGNORE_ERRORS: bool = True
     CACHE_DIR: str = os.environ.get("CACHE_DIR", "/tmp")
@@ -100,25 +104,32 @@ class Base(object):
 
 
 class Production(Base, Features):
-    CACHE_DEFAULT_TIMEOUT = int(os.environ.get("CACHE_DEFAULT_TIMEOUT", "300"))
+    pass
 
 
 class Staging(Base, Features):
+    SENTRY_SAMPLE_RATE = float(os.getenv("SENTRY_SAMPLE_RATE", "1"))
+
     CACHE_DEFAULT_TIMEOUT = int(os.environ.get("CACHE_DEFAULT_TIMEOUT", "60"))
 
 
 class Develop(Base, Features):
     DEBUG = strtobool(os.getenv("DEBUG", "True"))
 
+    SENTRY_SAMPLE_RATE = float(os.getenv("SENTRY_SAMPLE_RATE", "0"))
+
     FORCE_HTTPS = strtobool(os.getenv("FORCE_HTTPS", "False"))
 
 
 class Test(Base, Features):
-    ENVIRONMENT = "test"
+    ENVIRONMENT_NAME = "test"
 
     DEBUG = True
     TESTING = True
     EXPLAIN_TEMPLATE_LOADING = True
+
+    SENTRY_DSN = ""
+    SENTRY_SAMPLE_RATE = 0
 
     CACHE_TYPE = "SimpleCache"
     CACHE_DEFAULT_TIMEOUT = 1

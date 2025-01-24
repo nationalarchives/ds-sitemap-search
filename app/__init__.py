@@ -1,5 +1,6 @@
 import logging
 
+import sentry_sdk
 from app.lib.cache import cache
 from app.lib.context_processor import cookie_preference, now_iso_8601
 from app.lib.talisman import talisman
@@ -11,6 +12,20 @@ from jinja2 import ChoiceLoader, PackageLoader
 def create_app(config_class):
     app = Flask(__name__, static_url_path="/search/sitemap/static")
     app.config.from_object(config_class)
+
+    if app.config.get("SENTRY_DSN"):
+        sentry_sdk.init(
+            dsn=app.config.get("SENTRY_DSN"),
+            environment=app.config.get("ENVIRONMENT_NAME"),
+            release=(
+                f"ds-sitemap-search@{app.config.get('BUILD_VERSION')}"
+                if app.config.get("BUILD_VERSION")
+                else ""
+            ),
+            sample_rate=app.config.get("SENTRY_SAMPLE_RATE"),
+            traces_sample_rate=app.config.get("SENTRY_SAMPLE_RATE"),
+            profiles_sample_rate=app.config.get("SENTRY_SAMPLE_RATE"),
+        )
 
     gunicorn_error_logger = logging.getLogger("gunicorn.error")
     app.logger.handlers.extend(gunicorn_error_logger.handlers)
