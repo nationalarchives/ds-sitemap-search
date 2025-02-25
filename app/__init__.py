@@ -10,7 +10,7 @@ from jinja2 import ChoiceLoader, PackageLoader
 
 
 def create_app(config_class):
-    app = Flask(__name__, static_url_path="/search/sitemap/static")
+    app = Flask(__name__, static_url_path="/search/static")
     app.config.from_object(config_class)
 
     if app.config.get("SENTRY_DSN"):
@@ -148,6 +148,6 @@ def create_app(config_class):
 
     app.register_blueprint(site_bp)
     app.register_blueprint(healthcheck_bp, url_prefix="/healthcheck")
-    app.register_blueprint(sitemap_search_bp, url_prefix="/search/sitemap")
+    app.register_blueprint(sitemap_search_bp, url_prefix="/search")
 
     return app
