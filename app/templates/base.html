@@ -5,6 +5,8 @@
 {%- from 'components/global-header/macro.html' import tnaGlobalHeader -%}
 
 {%- set theme = request.cookies.get('theme') or 'system' -%}
+{# TODO: Remove once more pages can support dark mode #}
+{%- set theme = 'light' -%}
 {%- set themeAccent = themeAccent if themeAccent else 'yellow' -%}
 {%- set htmlAttributes = {
   'data-ga4id': app_config.GA4_ID or '',
@@ -114,9 +116,139 @@
 
 {% block footer %}
 {{ tnaFooter({
-  'themeSelector': True,
+  'themeSelector': False,
   'currentTheme': theme,
-  'classes': 'tna-!--margin-top-l'
+  'social': [
+    {
+      'href': 'https://twitter.com/UKNatArchives',
+      'icon': 'twitter',
+      'title': 'The National Archives X feed (formerly known as Twitter)'
+    },
+    {
+      'href': 'https://www.youtube.com/c/TheNationalArchivesUK',
+      'icon': 'youtube',
+      'title': 'The National Archives YouTube channel'
+    },
+    {
+      'href': 'https://www.facebook.com/TheNationalArchives',
+      'icon': 'facebook',
+      'title': 'The National Archives Facebook page'
+    },
+    {
+      'href': 'https://www.flickr.com/photos/nationalarchives',
+      'icon': 'flickr',
+      'title': 'The National Archives Flickr feed'
+    },
+    {
+      'href': 'https://www.instagram.com/nationalarchivesuk/',
+      'icon': 'instagram',
+      'title': 'The National Archives Instagram feed'
+    }
+  ],
+  'navigation': [
+    {
+      'title': 'Quick links',
+      'items': [
+        {
+          'text': 'About us',
+          'href': 'https://www.nationalarchives.gov.uk/about/'
+        },
+        {
+          'text': 'Contact us',
+          'href': 'https://www.nationalarchives.gov.uk/contact-us/'
+        },
+        {
+          'text': 'News',
+          'href': 'https://www.nationalarchives.gov.uk/about/news/'
+        },
+        {
+          'text': 'Blog',
+          'href': 'https://blog.nationalarchives.gov.uk/'
+        },
+        {
+          'text': 'Podcasts',
+          'href': 'https://media.nationalarchives.gov.uk/index.php/category/podcasts-2/'
+        },
+        {
+          'text': 'Image library',
+          'href': 'https://images.nationalarchives.gov.uk/'
+        },
+        {
+          'text': 'Press room',
+          'href': 'https://www.nationalarchives.gov.uk/about/press-room/'
+        },
+        {
+          'text': 'Jobs',
+          'href': 'https://www.nationalarchives.gov.uk/about/jobs/'
+        },
+        {
+          'text': 'British citizenship services',
+          'href': 'https://www.nationalarchives.gov.uk/contact-us/british-citizenship-services/'
+        },
+        {
+          'text': 'Historical Manuscripts Commission',
+          'href': 'https://www.nationalarchives.gov.uk/archives-sector/our-archives-sector-role/historical-manuscripts-commission/'
+        }
+      ]
+    },
+    {
+      'title': 'Other websites',
+      'items': [
+        {
+          'text': 'UK Government Web Archive',
+          'href': 'https://www.nationalarchives.gov.uk/webarchive/'
+        },
+        {
+          'text': 'Legislation.gov.uk',
+          'href': 'https://www.legislation.gov.uk/'
+        },
+        {
+          'text': 'Find Case Law',
+          'href': 'https://caselaw.nationalarchives.gov.uk/'
+        },
+        {
+          'text': 'The Gazette',
+          'href': 'https://www.thegazette.co.uk/',
+        },
+        {
+          'text': 'The National Archives Trust',
+          'href': 'https://www.nationalarchivestrust.org.uk/'
+        },
+        {
+          'text': 'Friends of The National Archives',
+          'href': 'https://ftna.org.uk/'
+        },
+        {
+          'text': 'The National Archives Design System',
+          'href': 'https://design-system.nationalarchives.gov.uk/'
+        },
+      ]
+    }
+  ],
+  'showNewsletter': True,
+  'legal': [
+    {
+      'text': 'Accessibility statement',
+      'href': 'https://www.nationalarchives.gov.uk/help/web-accessibility/'
+    },
+    {
+      'text': 'Freedom of information',
+      'href': 'https://www.nationalarchives.gov.uk/about/freedom-of-information/'
+    },
+    {
+      'text': 'Terms and conditions',
+      'href': 'https://www.nationalarchives.gov.uk/legal/'
+    },
+    {
+      'text': 'Privacy policy',
+      'href': 'https://www.nationalarchives.gov.uk/legal/privacy.htm'
+    },
+    {
+      'text': 'Cookies',
+      'href': 'https://www.nationalarchives.gov.uk/legal/cookies/'
+    }
+  ],
+  'classes': '' if no_footer_top_margin else 'tna-!--margin-top-l'
 }) | indent(4) }}
 {% endblock %}
 
