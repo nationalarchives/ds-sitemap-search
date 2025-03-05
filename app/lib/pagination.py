@@ -86,12 +86,14 @@ def pagination_object(
         pagination_object["previous"] = {
             "href": generate_new_page_query_string(
                 current_args, current_page - 1
-            )
+            ),
+            "title": "Previous page of results",
         }
     if current_page < total_pages:
         pagination_object["next"] = {
             "href": generate_new_page_query_string(
                 current_args, current_page + 1
-            )
+            ),
+            "title": "Next page of results",
         }
     return pagination_object
