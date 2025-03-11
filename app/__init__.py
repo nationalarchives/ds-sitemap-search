@@ -139,7 +139,9 @@ def create_app(config_class):
                 "COOKIE_DOMAIN": app.config.get("COOKIE_DOMAIN"),
                 "GA4_ID": app.config.get("GA4_ID"),
             },
-            feature={},
+            feature={
+                "PHASE_BANNER": app.config.get("FEATURE_PHASE_BANNER"),
+            },
         )
 
     from .healthcheck import bp as healthcheck_bp

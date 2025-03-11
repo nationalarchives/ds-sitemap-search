@@ -5,7 +5,9 @@ from app.lib.util import strtobool
 
 
 class Features(object):
-    pass
+    FEATURE_PHASE_BANNER: bool = strtobool(
+        os.getenv("FEATURE_PHASE_BANNER", "True")
+    )
 
 
 class Base(object):
