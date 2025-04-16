@@ -10,14 +10,13 @@ import psycopg2.extras
 import requests
 from bs4 import BeautifulSoup
 
-
-def fix_url(url):
-    url = re.sub(
-        "http://website.live.local",
-        "https://www.nationalarchives.gov.uk",
-        url,
-    )
-    return url
+# def fix_url(url):
+#     url = re.sub(
+#         "http://website.live.local",
+#         "https://www.nationalarchives.gov.uk",
+#         url,
+#     )
+#     return url
 
 
 def parse_sitemap(sitemap_xml):
@@ -33,7 +32,7 @@ def parse_sitemap(sitemap_xml):
                         == "{http://www.sitemaps.org/schemas/sitemap/0.9}loc"
                     ):
                         url = loc.text
-                        url = fix_url(url)
+                        # url = fix_url(url)
                         urls.append(url)
     elif sitemap_xml is not None and (
         sitemap_xml.tag
@@ -50,7 +49,7 @@ def parse_sitemap(sitemap_xml):
                         == "{http://www.sitemaps.org/schemas/sitemap/0.9}loc"
                     ):
                         url = loc.text
-                        url = fix_url(url)
+                        # url = fix_url(url)
                         if " " not in url:
                             urls = urls + get_urls_from_sitemap(url)
     return urls
@@ -132,7 +131,9 @@ def populate():
                         if body
                         else ""
                     )
-                    print(f"{padded_enumeration(index + 1, len(urls))} {url}")
+                    print(
+                        f"✅ {padded_enumeration(index + 1, len(urls))} {url}"
+                    )
                     existing_urls.append(url)
                     cur.execute(
                         "INSERT INTO sitemap_urls (title, url, description, body) VALUES (%s, %s, %s, %s);",
@@ -141,11 +142,11 @@ def populate():
                     conn.commit()
                 else:
                     print(
-                        f"{padded_enumeration(index + 1, len(urls))} {url} - Error: {response.status_code}"
+                        f"⚠️ {padded_enumeration(index + 1, len(urls))} {url} - Error: {response.status_code}"
                     )
             else:
                 print(
-                    f"{padded_enumeration(index + 1, len(urls))} {url} - DONE"
+                    f"✅ {padded_enumeration(index + 1, len(urls))} {url} - DONE"
                 )
     cur.close()
     conn.close()

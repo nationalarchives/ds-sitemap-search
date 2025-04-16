@@ -18,7 +18,6 @@ services:
       - DB_USERNAME=postgres
       - DB_PASSWORD=postgres
       - SITEMAPS=https://develop.tna.dblclk.dev/sitemap.xml,https://blog.nationalarchives.gov.uk/sitemap_index.xml,https://design-system.nationalarchives.gov.uk/sitemap.xml
-      - POPULATE_ON_STARTUP=False
       - WEBARCHIVE_REWRITE_DOMAINS=blog.nationalarchives.gov.uk
       - FEATURE_PHASE_BANNER=False
     ports:
