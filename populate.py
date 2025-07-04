@@ -10,14 +10,6 @@ import psycopg2.extras
 import requests
 from bs4 import BeautifulSoup
 
-# def fix_url(url):
-#     url = re.sub(
-#         "http://website.live.local",
-#         "https://www.nationalarchives.gov.uk",
-#         url,
-#     )
-#     return url
-
 
 def parse_sitemap(sitemap_xml):
     urls = []

@@ -109,7 +109,6 @@ def index():
             total_results=total_results,
             results_per_page=results_per_page,
             pagination=pagination_object(page, pages, request.args),
-            webarchive_domains=webarchive_domains,
         )
     else:
         cur.execute("SELECT COUNT(*) AS total_results FROM sitemap_urls")
@@ -124,5 +123,4 @@ def index():
             total_results=total_results,
             results_per_page=results_per_page,
             pagination={},
-            webarchive_domains=webarchive_domains,
         )
