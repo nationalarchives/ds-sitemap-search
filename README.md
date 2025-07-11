@@ -25,6 +25,9 @@ docker compose exec app cp -r /app/node_modules/@nationalarchives/frontend/natio
 # Populate all pages from sitemaps and update existing entries
 docker compose exec app poetry run python populate.py
 
+# Process a specific sitemap
+docker compose exec app poetry run python populate.py https://blog.nationalarchives.gov.uk/sitemap.xml
+
 # Add new URLs but don't update existing ones
 docker compose exec app poetry run python add_new.py
 

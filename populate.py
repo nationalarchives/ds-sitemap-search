@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 from multiprocessing import Pool
 
 import psycopg2
@@ -111,6 +112,25 @@ class Engine(object):
             )
 
 
+def process_sitemap(sitemap, skip_existing=False):
+    conn = SingletonDB().get_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute("SELECT url FROM sitemap_urls;")
+    existing_urls = cur.fetchall()
+    existing_urls = [url.get("url") for url in existing_urls]
+    cur.close()
+
+    urls = get_urls_from_sitemap(sitemap)
+    try:
+        pool = Pool()
+        engine = Engine(len(urls), existing_urls, skip_existing)
+        pool.map(engine, [(index, url) for index, url in enumerate(urls)], 1)
+    finally:
+        pool.close()
+        pool.join()
+        print(f"Finished processing {sitemap}")
+
+
 def populate(skip_existing=False, drop_table=False):
     conn = SingletonDB().get_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
@@ -136,27 +156,14 @@ def populate(skip_existing=False, drop_table=False):
     sitemaps = os.getenv("SITEMAPS", "").split(",")
 
     for sitemap in sitemaps:
-        conn = SingletonDB().get_connection()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cur.execute("SELECT url FROM sitemap_urls;")
-        existing_urls = cur.fetchall()
-        existing_urls = [url.get("url") for url in existing_urls]
-        cur.close()
+        process_sitemap(sitemap, skip_existing)
 
-        urls = get_urls_from_sitemap(sitemap)
-        try:
-            pool = Pool()
-            engine = Engine(len(urls), existing_urls, skip_existing)
-            pool.map(
-                engine, [(index, url) for index, url in enumerate(urls)], 1
-            )
-        finally:
-            pool.close()
-            pool.join()
-            print(f"Finished processing {sitemap}")
-
-    SingletonDB().get_connection().close_connection()
+    SingletonDB().close_connection()
 
 
 if __name__ == "__main__":
-    populate()
+    sitemap = sys.argv[1] or None
+    if sitemap:
+        process_sitemap(sitemap)
+    else:
+        populate()
