@@ -71,7 +71,7 @@
             'headingSize': 'm',
             'title': result.title.replace(', Author at The National Archives blog', '').replace(' - The National Archives blog', '').replace(' - The National Archives Design System', '').replace(' - The National Archives', '') | mark(q) | safe,
             'href': result.url | use_archived_url,
-            'body': ('<p>' + (result.description | mark(q)) + '</p>' if result.description and result.description != '...' else '') + '<p><small>' + result.url + '</small></p>',
+            'body': ('<p>' + (result.description | mark(q)) + '</p>' if result.description and result.description != '...' else '') + '<p><small>' + (result.url | mark(q)) + '</small></p>',
             'fullAreaClick': True,
             'attributes': {
               'data-id': result.id,
