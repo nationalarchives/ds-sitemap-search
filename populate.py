@@ -24,7 +24,6 @@ def parse_sitemap(sitemap_xml):
                         == "{http://www.sitemaps.org/schemas/sitemap/0.9}loc"
                     ):
                         url = loc.text
-                        # url = fix_url(url)
                         urls.append(url)
     elif sitemap_xml is not None and (
         sitemap_xml.tag
@@ -41,7 +40,6 @@ def parse_sitemap(sitemap_xml):
                         == "{http://www.sitemaps.org/schemas/sitemap/0.9}loc"
                     ):
                         url = loc.text
-                        # url = fix_url(url)
                         if " " not in url:
                             urls = urls + get_urls_from_sitemap(url)
     return urls
@@ -100,45 +98,45 @@ def populate():
     for sitemap in sitemaps:
         urls = get_urls_from_sitemap(sitemap)
         for index, url in enumerate(urls):
-            if url not in existing_urls:
-                response = requests.get(url)
-                if response.ok:
-                    html = response.text
-                    soup = BeautifulSoup(html, "lxml")
-                    title = soup.title
-                    title = title.text if title else None
-                    description = soup.find(
-                        "meta", attrs={"property": "og:description"}
-                    ) or soup.find("meta", attrs={"name": "description"})
-                    description = (
-                        description.attrs["content"]
-                        if description and "content" in description.attrs
-                        else None
-                    )
-                    body = (
-                        soup.find("main") or soup.find(role="main") or soup.body
-                    )
-                    body = (
-                        re.sub(r"\n+\s*", "\n", body.text).strip()
-                        if body
-                        else ""
-                    )
-                    print(
-                        f"✅ {padded_enumeration(index + 1, len(urls))} {url}"
-                    )
+            response = requests.get(url)
+            if response.ok:
+                html = response.text
+                soup = BeautifulSoup(html, "lxml")
+                title = soup.title
+                title = title.text if title else None
+                description = soup.find(
+                    "meta", attrs={"property": "og:description"}
+                ) or soup.find("meta", attrs={"name": "description"})
+                description = (
+                    description.attrs["content"]
+                    if description and "content" in description.attrs
+                    else None
+                )
+                body = soup.find("main") or soup.find(role="main") or soup.body
+                body = (
+                    re.sub(r"\n+\s*", "\n", body.text).strip() if body else ""
+                )
+                if url not in existing_urls:
                     existing_urls.append(url)
                     cur.execute(
                         "INSERT INTO sitemap_urls (title, url, description, body) VALUES (%s, %s, %s, %s);",
                         (title, url, description, body),
                     )
-                    conn.commit()
-                else:
                     print(
-                        f"⚠️ {padded_enumeration(index + 1, len(urls))} {url} - Error: {response.status_code}"
+                        f"✅ {padded_enumeration(index + 1, len(urls))} {url} - Added"
                     )
+                else:
+                    cur.execute(
+                        "UPDATE sitemap_urls SET title = %s, description = %s, body = %s WHERE url = %s;",
+                        (title, description, body, url),
+                    )
+                    print(
+                        f"✅ {padded_enumeration(index + 1, len(urls))} {url} - Updated"
+                    )
+                conn.commit()
             else:
                 print(
-                    f"✅ {padded_enumeration(index + 1, len(urls))} {url} - DONE"
+                    f"⚠️ {padded_enumeration(index + 1, len(urls))} {url} - Error: {response.status_code}"
                 )
     cur.close()
     conn.close()
