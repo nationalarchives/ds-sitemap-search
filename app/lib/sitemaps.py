@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 
 
 def parse_sitemap(sitemap_xml):
-    urls = []
+    urls = set()
     if sitemap_xml is not None and (
         sitemap_xml.tag == "{http://www.sitemaps.org/schemas/sitemap/0.9}urlset"
     ):
@@ -17,7 +17,7 @@ def parse_sitemap(sitemap_xml):
                         == "{http://www.sitemaps.org/schemas/sitemap/0.9}loc"
                     ):
                         url = loc.text
-                        urls.append(url)
+                        urls.add(url)
     elif sitemap_xml is not None and (
         sitemap_xml.tag
         == "{http://www.sitemaps.org/schemas/sitemap/0.9}sitemapindex"
@@ -34,8 +34,8 @@ def parse_sitemap(sitemap_xml):
                     ):
                         url = loc.text
                         if " " not in url:
-                            urls = urls + get_urls_from_sitemap(url)
-    return urls
+                            urls.update(get_urls_from_sitemap(url))
+    return list(urls)
 
 
 def get_urls_from_sitemap(sitemap_url):

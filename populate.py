@@ -97,7 +97,7 @@ class Engine(object):
             else:
                 # The URL exists, update it
                 cur.execute(
-                    "UPDATE sitemap_urls SET title = %s, description = %s, body = %s WHERE url = %s;",
+                    "UPDATE sitemap_urls SET title = %s, description = %s, body = %s, date_updated = CURRENT_TIMESTAMP WHERE url = %s;",
                     (title, description, body, url),
                 )
                 print(
@@ -126,6 +126,7 @@ def populate(skip_existing=False, drop_table=False):
             url varchar (500) NOT NULL,
             body text,
             date_added timestamp DEFAULT CURRENT_TIMESTAMP,
+            date_updated timestamp DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(url)
         );"""
     )
