@@ -4,6 +4,7 @@ import sys
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
+from multiprocessing import Pool
 
 import psycopg2
 import psycopg2.extras
@@ -67,16 +68,71 @@ def padded_enumeration(number, total):
     return f"[{str(number).rjust(len(str(total)), " ")}/{total}]"
 
 
-def populate():
-    conn = psycopg2.connect(
+def get_db_conn():
+    return psycopg2.connect(
         host=os.environ.get("DB_HOST"),
         database=os.environ.get("DB_NAME"),
         user=os.environ.get("DB_USERNAME"),
         password=os.environ.get("DB_PASSWORD"),
     )
 
+
+class Engine(object):
+    def __init__(self, num_urls, existing_urls):
+        self.num_urls = num_urls
+        self.existing_urls = existing_urls
+
+    def __call__(self, data):
+        index, url = data
+        conn = get_db_conn()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        response = requests.get(url)
+        if response.ok:
+            html = response.text
+            soup = BeautifulSoup(html, "lxml")
+            title = soup.title
+            title = title.text if title else None
+            description = soup.find(
+                "meta", attrs={"property": "og:description"}
+            ) or soup.find("meta", attrs={"name": "description"})
+            description = (
+                description.attrs["content"]
+                if description and "content" in description.attrs
+                else None
+            )
+            body = soup.find("main") or soup.find(role="main") or soup.body
+            body = re.sub(r"\n+\s*", "\n", body.text).strip() if body else ""
+            if url not in self.existing_urls:
+                self.existing_urls.append(url)
+                cur.execute(
+                    "INSERT INTO sitemap_urls (title, url, description, body) VALUES (%s, %s, %s, %s);",
+                    (title, url, description, body),
+                )
+                print(
+                    f"✅ {padded_enumeration(index + 1, self.num_urls)} [ ADDED ] {url}"
+                )
+            else:
+                cur.execute(
+                    "UPDATE sitemap_urls SET title = %s, description = %s, body = %s WHERE url = %s;",
+                    (title, description, body, url),
+                )
+                print(
+                    f"✅ {padded_enumeration(index + 1, self.num_urls)} [UPDATED] {url}"
+                )
+            conn.commit()
+        else:
+            print(
+                f"⚠️ {padded_enumeration(index + 1, self.num_urls)} [ ERROR ] {url} - {response.status_code}"
+            )
+        cur.close()
+        conn.close()
+
+
+def populate():
+    conn = get_db_conn()
+
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-    # cur.execute("DROP TABLE IF EXISTS sitemap_urls;")
+    # cur.execute("DROP TABLE IF EXISTS sitemap_urls;")  # Uncomment to drop the table
     cur.execute(
         """CREATE TABLE IF NOT EXISTS sitemap_urls (
             id serial PRIMARY KEY,
@@ -92,54 +148,23 @@ def populate():
 
     cur.execute("SELECT url FROM sitemap_urls;")
     existing_urls = cur.fetchall()
+    cur.close()
+    conn.close()
+
     existing_urls = [result["url"] for result in existing_urls]
 
     sitemaps = os.getenv("SITEMAPS", "").split(",")
+
     for sitemap in sitemaps:
         urls = get_urls_from_sitemap(sitemap)
-        for index, url in enumerate(urls):
-            response = requests.get(url)
-            if response.ok:
-                html = response.text
-                soup = BeautifulSoup(html, "lxml")
-                title = soup.title
-                title = title.text if title else None
-                description = soup.find(
-                    "meta", attrs={"property": "og:description"}
-                ) or soup.find("meta", attrs={"name": "description"})
-                description = (
-                    description.attrs["content"]
-                    if description and "content" in description.attrs
-                    else None
-                )
-                body = soup.find("main") or soup.find(role="main") or soup.body
-                body = (
-                    re.sub(r"\n+\s*", "\n", body.text).strip() if body else ""
-                )
-                if url not in existing_urls:
-                    existing_urls.append(url)
-                    cur.execute(
-                        "INSERT INTO sitemap_urls (title, url, description, body) VALUES (%s, %s, %s, %s);",
-                        (title, url, description, body),
-                    )
-                    print(
-                        f"✅ {padded_enumeration(index + 1, len(urls))} {url} - Added"
-                    )
-                else:
-                    cur.execute(
-                        "UPDATE sitemap_urls SET title = %s, description = %s, body = %s WHERE url = %s;",
-                        (title, description, body, url),
-                    )
-                    print(
-                        f"✅ {padded_enumeration(index + 1, len(urls))} {url} - Updated"
-                    )
-                conn.commit()
-            else:
-                print(
-                    f"⚠️ {padded_enumeration(index + 1, len(urls))} {url} - Error: {response.status_code}"
-                )
-    cur.close()
-    conn.close()
+        try:
+            pool = Pool()
+            engine = Engine(len(urls), existing_urls)
+            pool.map(engine, [(index, url) for index, url in enumerate(urls)])
+        finally:
+            pool.close()
+            pool.join()
+            print(f"Finished processing {sitemap}")
 
 
 if __name__ == "__main__":
