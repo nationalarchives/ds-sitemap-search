@@ -14,13 +14,27 @@ def padded_enumeration(number, total):
     return f"[{str(number).rjust(len(str(total)), " ")}/{total}]"
 
 
-def get_db_conn():
-    return psycopg2.connect(
-        host=os.environ.get("DB_HOST"),
-        database=os.environ.get("DB_NAME"),
-        user=os.environ.get("DB_USERNAME"),
-        password=os.environ.get("DB_PASSWORD"),
-    )
+class SingletonDB(object):
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(SingletonDB, cls).__new__(
+                cls, *args, **kwargs
+            )
+            cls._instance.db = psycopg2.connect(
+                host=os.environ.get("DB_HOST"),
+                database=os.environ.get("DB_NAME"),
+                user=os.environ.get("DB_USERNAME"),
+                password=os.environ.get("DB_PASSWORD"),
+            )
+        return cls._instance
+
+    def get_connection(self):
+        return self.db
+
+    def close_connection(self):
+        return self.db.close()
 
 
 class Engine(object):
@@ -52,10 +66,10 @@ class Engine(object):
             return
 
         if response.ok:
-            conn = get_db_conn()
+            conn = SingletonDB().get_connection()
             cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-            soup = BeautifulSoup(response.text, "html.parser")
 
+            soup = BeautifulSoup(response.text, "html.parser")
             title = soup.title
             title = title.text if title else None
             description = soup.find(
@@ -78,6 +92,8 @@ class Engine(object):
                 print(
                     f"✅ {padded_enumeration(index + 1, self.num_urls)} [ ADDED ] {url}"
                 )
+                existing_urls = self.existing_urls + [url]
+                self.existing_urls = existing_urls
             else:
                 # The URL exists, update it
                 cur.execute(
@@ -89,7 +105,6 @@ class Engine(object):
                 )
             conn.commit()
             cur.close()
-            conn.close()
         else:
             print(
                 f"⚠️ {padded_enumeration(index + 1, self.num_urls)} [ ERROR ] {url} - {response.status_code}"
@@ -97,7 +112,7 @@ class Engine(object):
 
 
 def populate(skip_existing=False, drop_table=False):
-    conn = get_db_conn()
+    conn = SingletonDB().get_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     if drop_table:
@@ -115,16 +130,18 @@ def populate(skip_existing=False, drop_table=False):
         );"""
     )
     conn.commit()
-
-    cur.execute("SELECT url FROM sitemap_urls;")
-    existing_urls = cur.fetchall()
-    existing_urls = [url.get("url") for url in existing_urls]
     cur.close()
-    conn.close()
 
     sitemaps = os.getenv("SITEMAPS", "").split(",")
 
     for sitemap in sitemaps:
+        conn = SingletonDB().get_connection()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute("SELECT url FROM sitemap_urls;")
+        existing_urls = cur.fetchall()
+        existing_urls = [url.get("url") for url in existing_urls]
+        cur.close()
+
         urls = get_urls_from_sitemap(sitemap)
         try:
             pool = Pool()
@@ -136,6 +153,8 @@ def populate(skip_existing=False, drop_table=False):
             pool.close()
             pool.join()
             print(f"Finished processing {sitemap}")
+
+    SingletonDB().get_connection().close_connection()
 
 
 if __name__ == "__main__":
