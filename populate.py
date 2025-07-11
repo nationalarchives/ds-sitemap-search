@@ -160,7 +160,9 @@ def populate():
         try:
             pool = Pool()
             engine = Engine(len(urls), existing_urls)
-            pool.map(engine, [(index, url) for index, url in enumerate(urls)])
+            pool.map(
+                engine, [(index, url) for index, url in enumerate(urls)], 1
+            )
         finally:
             pool.close()
             pool.join()
