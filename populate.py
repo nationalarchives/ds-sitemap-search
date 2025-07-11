@@ -37,8 +37,9 @@ class SingletonDB(object):
         return self.db
 
     def close_connection(self):
-        self.db.close()
-        self.db = None
+        if self.db:
+            self.db.close()
+            self.db = None
 
 
 class Engine(object):
@@ -163,13 +164,13 @@ def populate(skip_existing=False, drop_table=False):
     for sitemap in sitemaps:
         process_sitemap(sitemap, skip_existing)
 
-    exit(0)
+    SingletonDB().close_connection()
 
 
 if __name__ == "__main__":
     try:
         sitemap = sys.argv[1]
         process_sitemap(sitemap=sitemap)
-        exit(0)
     except IndexError:
         populate()
+    exit(0)
