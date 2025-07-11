@@ -164,6 +164,6 @@ def populate(skip_existing=False, drop_table=False):
 if __name__ == "__main__":
     sitemap = sys.argv[1] or None
     if sitemap:
-        process_sitemap(sitemap)
+        process_sitemap(sitemap=sitemap)
     else:
         populate()

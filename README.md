@@ -31,6 +31,9 @@ docker compose exec app poetry run python populate.py https://blog.nationalarchi
 # Add new URLs but don't update existing ones
 docker compose exec app poetry run python add_new.py
 
+# Add new URLs from a specific sitemap
+docker compose exec app poetry run python add_new.py https://blog.nationalarchives.gov.uk/sitemap.xml
+
 # Drop all URLs and re-index - THIS IS A DESTRUCTIVE ACTION
 docker compose exec app poetry run python clean.py
 ```
