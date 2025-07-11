@@ -17,8 +17,7 @@ services:
       - DB_NAME=postgres
       - DB_USERNAME=postgres
       - DB_PASSWORD=postgres
-      - SITEMAPS=https://www.nationalarchives.gov.uk/sitemap.xml,https://design-system.nationalarchives.gov.uk/sitemap.xml
-      - WEBARCHIVE_REWRITE_DOMAINS=blog.nationalarchives.gov.uk
+      - SITEMAPS=https://www.nationalarchives.gov.uk/sitemap.xml,https://design-system.nationalarchives.gov.uk/sitemap.xml,https://blog.nationalarchives.gov.uk/sitemap.xml
       - FEATURE_PHASE_BANNER=False
     ports:
       - 65525:8080

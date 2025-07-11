@@ -3,6 +3,15 @@ import os
 
 from app.lib.util import strtobool
 
+DOMAIN_REMAPS = {
+    "http://website.live.local/": "https://www.nationalarchives.gov.uk/",
+    "http://website.staging.local/": "https://staging-www.nationalarchives.gov.uk/",
+    "http://website.dev.local/": "https://dev-www.nationalarchives.gov.uk/",
+}
+ARCHIVE_REMAP = {
+    "https://blog.nationalarchives.gov.uk/": "https://webarchive.nationalarchives.gov.uk/ukgwa/20250613141122/https://blog.nationalarchives.gov.uk/",
+}
+
 
 class Features(object):
     FEATURE_PHASE_BANNER: bool = strtobool(
@@ -86,13 +95,12 @@ class Base(object):
 
     GA4_ID: str = os.environ.get("GA4_ID", "")
 
-    WEBARCHIVE_REWRITE_DOMAINS: list[str] = [
-        domain
-        for domain in os.environ.get("WEBARCHIVE_REWRITE_DOMAINS", "").split(
-            ","
-        )
-        if domain
-    ]
+    DOMAIN_REMAPS: dict = (
+        json.loads(os.environ.get("DOMAIN_REMAPS", "{}")) or DOMAIN_REMAPS
+    )
+    ARCHIVE_REMAP: dict = (
+        json.loads(os.environ.get("ARCHIVE_REMAP", "{}")) or ARCHIVE_REMAP
+    )
 
     RELEVANCE_TITLE_MATCH_WEIGHT: float = float(
         os.environ.get("RELEVANCE_TITLE_MATCH_WEIGHT", "5")

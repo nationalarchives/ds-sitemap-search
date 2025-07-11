@@ -19,10 +19,17 @@ To add back in the static assets, run:
 docker compose exec app cp -r /app/node_modules/@nationalarchives/frontend/nationalarchives/assets /app/app/static
 ```
 
-### Initial population
+### Population
 
 ```sh
+# Populate all pages from sitemaps and update existing entries
 docker compose exec app poetry run python populate.py
+
+# Add new URLs but don't update existing ones
+docker compose exec app poetry run python add_new.py
+
+# Drop all URLs and re-index - THIS IS A DESTRUCTIVE ACTION
+docker compose exec app poetry run python clean.py
 ```
 
 ### Run tests
@@ -66,7 +73,6 @@ In addition to the [base Docker image variables](https://github.com/nationalarch
 | `CACHE_DEFAULT_TIMEOUT`          | The number of seconds to cache pages for                                      | production: `300`, staging: `60`, develop: `0`, test: `0` |
 | `CACHE_DIR`                      | Directory for storing cached responses when using `FileSystemCache`           | `/tmp`                                                    |
 | `GA4_ID`                         | The Google Analytics 4 ID                                                     | _none_                                                    |
-| `WEBARCHIVE_REWRITE_DOMAINS`     | A CSV list of domains to consider archived                                    | _none_                                                    |
 | `RELEVANCE_TITLE_MATCH_WEIGHT`   | The multiplier to use for every query match in the title                      | `5`                                                       |
 | `RELEVANCE_BODY_MATCH_WEIGHT`    | The multiplier to use for every query match in the body                       | `1`                                                       |
 | `RELEVANCE_ARCHIVED_WEIGHT`      | The multiplier to use for a result with a URL in `WEBARCHIVE_REWRITE_DOMAINS` | `0.5`                                                     |

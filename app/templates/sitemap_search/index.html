@@ -64,20 +64,13 @@
       <p class="tna-!--no-margin-top tna-!--padding-top-s">Showing {{ ((results_per_page * (page - 1)) + 1) | commafy }}&ndash;{{ (results_per_page * page if results_per_page * page < total_results else total_results) | commafy }} of {{ total_results | commafy }} results{% if q %} for &quot;{{ q }}&quot;{% endif %}</p>
       <ul class="tna-container tna-container--nested tna-!--margin-top-m">
         {% for result in results %}
-        {% set ns = namespace(result_url=result.url, supertitle='') %}
         <li class="tna-column tna-column--full tna-!--margin-bottom-l">
-          {% for domain in webarchive_domains %}
-            {% if domain in result.url %}
-              {% set ns.result_url = 'https://webarchive.nationalarchives.gov.uk/ukgwa/+/' + result.url %}
-              {% set ns.supertitle = 'Archived' %}
-            {% endif %}
-          {% endfor %}
           {{ tnaCard({
-            'supertitle': ns.supertitle,
+            'supertitle': 'Archived' if (result.url | is_url_archived) else '',
             'headingLevel': 3,
             'headingSize': 'm',
             'title': result.title.replace(', Author at The National Archives blog', '').replace(' - The National Archives blog', '').replace(' - The National Archives Design System', '').replace(' - The National Archives', '') | mark(q) | safe,
-            'href': ns.result_url,
+            'href': result.url | use_archived_url,
             'body': ('<p>' + (result.description | mark(q)) + '</p>' if result.description and result.description != '...' else '') + '<p><small>' + result.url + '</small></p>',
             'fullAreaClick': True,
             'attributes': {

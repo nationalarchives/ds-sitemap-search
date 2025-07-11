@@ -21,7 +21,7 @@ def index():
         else 1
     )
     results_per_page = 12
-    webarchive_domains = current_app.config.get("WEBARCHIVE_REWRITE_DOMAINS")
+    webarchive_domains = current_app.config.get("ARCHIVE_REMAP").keys()
     conn = psycopg2.connect(
         host=os.environ.get("DB_HOST"),
         database=os.environ.get("DB_NAME"),
@@ -36,6 +36,7 @@ def index():
         body_match_weight = current_app.config.get(
             "RELEVANCE_BODY_MATCH_WEIGHT"
         )
+        url_match_weight = 1
         archived_weight = current_app.config.get("RELEVANCE_ARCHIVED_WEIGHT")
         cur.execute(
             """WITH scored_results AS (
@@ -56,6 +57,12 @@ def index():
                                 CHAR_LENGTH(body) -
                                 CHAR_LENGTH(REPLACE(LOWER(body), %(query)s, ''))
                             ) * %(body_match_weight)s
+                        ) +
+                        (
+                            (
+                                CHAR_LENGTH(url) -
+                                CHAR_LENGTH(REPLACE(LOWER(url), %(query)s, ''))
+                            ) * %(url_match_weight)s
                         )
                     ) *
                     (
@@ -84,6 +91,7 @@ def index():
                 "query_length": len(query),
                 "title_match_weight": title_match_weight,
                 "body_match_weight": body_match_weight,
+                "url_match_weight": url_match_weight,
                 "archived_weight": archived_weight,
                 "limit": results_per_page,
                 "offset": (page - 1) * results_per_page,
