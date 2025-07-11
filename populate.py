@@ -132,7 +132,7 @@ def process_sitemap(sitemap, skip_existing=False):
         pool.close()
         pool.join()
         print(f"Finished processing {sitemap}")
-    
+
     SingletonDB().close_connection()
 
 
