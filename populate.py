@@ -17,25 +17,28 @@ def padded_enumeration(number, total):
 
 class SingletonDB(object):
     _instance = None
+    db = None
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super(SingletonDB, cls).__new__(
                 cls, *args, **kwargs
             )
-            cls._instance.db = psycopg2.connect(
+        return cls._instance
+
+    def get_connection(self):
+        if not self.db:
+            self.db = psycopg2.connect(
                 host=os.environ.get("DB_HOST"),
                 database=os.environ.get("DB_NAME"),
                 user=os.environ.get("DB_USERNAME"),
                 password=os.environ.get("DB_PASSWORD"),
             )
-        return cls._instance
-
-    def get_connection(self):
         return self.db
 
     def close_connection(self):
-        return self.db.close()
+        self.db.close()
+        self.db = None
 
 
 class Engine(object):
@@ -129,6 +132,8 @@ def process_sitemap(sitemap, skip_existing=False):
         pool.close()
         pool.join()
         print(f"Finished processing {sitemap}")
+    
+    SingletonDB().close_connection()
 
 
 def populate(skip_existing=False, drop_table=False):
@@ -158,12 +163,13 @@ def populate(skip_existing=False, drop_table=False):
     for sitemap in sitemaps:
         process_sitemap(sitemap, skip_existing)
 
-    SingletonDB().close_connection()
+    exit(0)
 
 
 if __name__ == "__main__":
-    sitemap = sys.argv[1] or None
-    if sitemap:
+    try:
+        sitemap = sys.argv[1]
         process_sitemap(sitemap=sitemap)
-    else:
+        exit(0)
+    except IndexError:
         populate()

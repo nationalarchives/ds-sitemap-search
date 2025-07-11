@@ -3,8 +3,9 @@ import sys
 from populate import populate, process_sitemap
 
 if __name__ == "__main__":
-    sitemap = sys.argv[1] or None
-    if sitemap:
+    try:
+        sitemap = sys.argv[1]
         process_sitemap(sitemap=sitemap, skip_existing=True)
-    else:
+        exit(0)
+    except IndexError:
         populate(skip_existing=True)
