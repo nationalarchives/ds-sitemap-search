@@ -57,7 +57,7 @@
     </div>
     <div class="tna-column tna-column--full tna-!--margin-top-s">
       {{ tnaRadios({
-        'label': 'Result types',
+        'label': 'Page types',
         'headingLevel': 2,
         'headingSize': 's',
         'id': 'search-types',
@@ -101,7 +101,7 @@
           {{ tnaCard({
             'supertitle': 'Archived' if (result.url | is_url_archived) else 'Research guide' if '/help-with-your-research/research-guides/' in result.url else '',
             'headingLevel': 3,
-            'headingSize': 'm',
+            'headingSize': 's',
             'title': result.title.replace(', Author at The National Archives blog', '').replace(' - The National Archives blog', '').replace(' - The National Archives Design System', '').replace(' - The National Archives', '') | mark(query_parts) | safe if result.title else '[No title]',
             'href': result.url | use_archived_url,
             'body': ('<p>' + (result.description | mark(query_parts)) + '</p>' if result.description and result.description != '...' else '') + '<p><small>' + (result.url | mark(query_parts)) + '</small></p>',
