@@ -2,8 +2,8 @@
 
 {%- from 'components/breadcrumbs/macro.html' import tnaBreadcrumbs -%}
 {%- from 'components/card/macro.html' import tnaCard -%}
-{%- from 'components/compound-filters/macro.html' import tnaCompoundFilters -%}
 {%- from 'components/pagination/macro.html' import tnaPagination -%}
+{%- from 'components/radios/macro.html' import tnaRadios -%}
 {%- from 'components/search-field/macro.html' import tnaSearchField -%}
 {%- from 'components/skip-link/macro.html' import tnaSkipLink -%}
 
@@ -52,8 +52,34 @@
         'id': 'search',
         'name': 'q',
         'value': q,
-        'maxLength': 30,
+        'maxLength': 30
       }) }}
+
+      {{ tnaRadios({
+        'label': 'Result types',
+        'headingLevel': 2,
+        'headingSize': 's',
+        'id': 'search-types',
+        'name': 'types',
+        'items': [
+          {
+            'text': 'All',
+            'value': 'all'
+          },
+          {
+            'text': 'Research guides',
+            'value': 'research-guides'
+          },
+          {
+            'text': 'Archived blog posts',
+            'value': 'archived-blog-posts',
+          }
+        ],
+        'selected': request.args.get('types', 'all') if request.args.get('types') in ['research-guides', 'archived-blog-posts'] else 'all',
+        'inline': True
+      }) }}
+
+
     </form>
   </div>
 </div>
@@ -70,7 +96,7 @@
         {% for result in results %}
         <li class="tna-column tna-column--full tna-!--margin-bottom-l">
           {{ tnaCard({
-            'supertitle': 'Archived' if (result.url | is_url_archived) else '',
+            'supertitle': 'Archived' if (result.url | is_url_archived) else 'Research guide' if '/help-with-your-research/research-guides/' in result.url else '',
             'headingLevel': 3,
             'headingSize': 'm',
             'title': result.title.replace(', Author at The National Archives blog', '').replace(' - The National Archives blog', '').replace(' - The National Archives Design System', '').replace(' - The National Archives', '') | mark(query_parts) | safe,

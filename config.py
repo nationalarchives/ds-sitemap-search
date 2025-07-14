@@ -138,6 +138,8 @@ class Develop(Base, Features):
 
     FORCE_HTTPS = strtobool(os.getenv("FORCE_HTTPS", "False"))
 
+    CACHE_DEFAULT_TIMEOUT = int(os.environ.get("CACHE_DEFAULT_TIMEOUT", "1"))
+
 
 class Test(Base, Features):
     ENVIRONMENT_NAME = "test"

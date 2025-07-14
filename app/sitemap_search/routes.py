@@ -122,6 +122,18 @@ def index():
                 )
             sql_sub_queries.append(sql.SQL(" + ").join(sql_sub_query_parts))
 
+        # Add a sub-query to filter by types if requested
+        types_sub_query = sql.SQL("")
+        requested_types = request.args.get("types", "all")
+        if requested_types == "research-guides":
+            types_sub_query = sql.SQL(
+                "AND url LIKE '%/help-with-your-research/research-guides/%'"
+            )
+        elif requested_types == "archived-blog-posts":
+            types_sub_query = sql.SQL(
+                "AND url LIKE 'https://blog.nationalarchives.gov.uk/%'"
+            )
+
         # Create the main SQL query to fetch the results
         sql_query = sql.SQL(
             """WITH scored_results AS (
@@ -140,7 +152,7 @@ def index():
                         END
                     ) AS relevance
                 FROM sitemap_urls
-                WHERE title IS NOT NULL
+                WHERE title IS NOT NULL {types_sub_query}
             )
             SELECT
                 id,
@@ -159,6 +171,7 @@ def index():
             archived_weight=sql.Literal(
                 current_app.config.get("RELEVANCE_ARCHIVED_WEIGHT")
             ),
+            types_sub_query=types_sub_query,
             limit=sql.Literal(results_per_page),
             offset=sql.Literal((page - 1) * results_per_page),
             webarchive_domains=sql.Literal(
