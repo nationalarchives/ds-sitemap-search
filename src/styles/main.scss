@@ -6,8 +6,14 @@
 @use "@nationalarchives/frontend/nationalarchives/all";
 
 .tna-card {
-  .tna-hgroup__supertitle {
-    @include colour.orange-accent;
+  .tna-hgroup {
+    &__supertitle {
+      @include colour.orange-accent;
+    }
+
+    &__title {
+      display: flex;
+    }
   }
 
   &__body {
@@ -56,5 +62,6 @@
 }
 
 mark {
+  @include colour.yellow-accent;
   @include colour.accent;
 }
