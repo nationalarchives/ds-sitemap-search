@@ -127,7 +127,10 @@ def index():
         requested_types = request.args.get("types", "all")
         if requested_types == "research-guides":
             types_sub_query = sql.SQL(
-                """AND "url" LIKE '%/help-with-your-research/research-guides/%'"""
+                """
+                AND "url" LIKE '%/help-with-your-research/research-guides/%'
+                AND "url" NOT LIKE '%/help-with-your-research/research-guides/'
+                """
             )
         elif requested_types == "archived-blog-posts":
             types_sub_query = sql.SQL(
