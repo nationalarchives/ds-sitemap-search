@@ -68,9 +68,8 @@ def index():
         query_parts = quoted_query_parts.union(
             set(discected_query.replace('"', "").lower().split(" "))
         )
-        query_parts = list(query_parts)
-        query_parts = [part for part in query_parts if part]
-        query_parts.sort()
+        query_parts = [part for part in list(query_parts) if part]
+        # query_parts.sort()
 
         # Define the fields we want to query and their realtive weights
         query_fields = [
