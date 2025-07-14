@@ -103,7 +103,7 @@ class Base(object):
     )
 
     RELEVANCE_TITLE_MATCH_WEIGHT: float = float(
-        os.environ.get("RELEVANCE_TITLE_MATCH_WEIGHT", "5")
+        os.environ.get("RELEVANCE_TITLE_MATCH_WEIGHT", "10")
     )
     RELEVANCE_BODY_MATCH_WEIGHT: float = float(
         os.environ.get("RELEVANCE_BODY_MATCH_WEIGHT", "2")
