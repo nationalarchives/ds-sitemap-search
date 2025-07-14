@@ -7,7 +7,7 @@
 {%- set theme = request.cookies.get('theme') or 'system' -%}
 {# TODO: Remove once more pages can support dark mode #}
 {%- set theme = 'light' -%}
-{%- set themeAccent = themeAccent if themeAccent else 'yellow' -%}
+{%- set themeAccent = themeAccent if themeAccent else 'blue' -%}
 {%- set htmlAttributes = {
   'data-ga4id': app_config.GA4_ID or '',
   'data-tna-cookies-domain': app_config.COOKIE_DOMAIN or ''
