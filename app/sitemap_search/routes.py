@@ -80,6 +80,12 @@ def index():
                 ),
             },
             {
+                "field": "description",
+                "weight": current_app.config.get(
+                    "RELEVANCE_DESCRIPTION_MATCH_WEIGHT"
+                ),
+            },
+            {
                 "field": "body",
                 "weight": current_app.config.get("RELEVANCE_BODY_MATCH_WEIGHT"),
             },
