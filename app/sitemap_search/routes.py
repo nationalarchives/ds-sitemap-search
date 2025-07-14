@@ -136,6 +136,10 @@ def index():
             types_sub_query = sql.SQL(
                 """AND "url" LIKE 'https://blog.nationalarchives.gov.uk/%'"""
             )
+        elif requested_types == "education-and-outreach":
+            types_sub_query = sql.SQL(
+                """AND "url" LIKE '%.nationalarchives.gov.uk/education/%'"""
+            )
 
         blacklisted_urls = current_app.config.get("BLACKLISTED_URLS_SQL_LIKE")
         blacklist_sub_where = (

@@ -42,8 +42,8 @@
 
 {% block content %}
 <div class="tna-background-accent-light tna-!--padding-top-s tna-!--padding-bottom-l">
-  <div class="tna-container">
-    <form class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny" method="get" action="{{ url_for('sitemap_search.index') }}" role="search">
+  <form class="tna-container" method="get" action="{{ url_for('sitemap_search.index') }}" role="search">
+    <div class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny">
       {{ tnaSearchField({
         'label': 'Search The National Archives website',
         'headingLevel': 1,
@@ -54,7 +54,8 @@
         'value': q,
         'maxLength': 30
       }) }}
-
+    </div>
+    <div class="tna-column tna-column--full tna-!--margin-top-s">
       {{ tnaRadios({
         'label': 'Result types',
         'headingLevel': 2,
@@ -73,15 +74,17 @@
           {
             'text': 'Archived blog posts',
             'value': 'archived-blog-posts',
+          },
+          {
+            'text': 'Education and Outreach',
+            'value': 'education-and-outreach',
           }
         ],
-        'selected': request.args.get('types', 'all') if request.args.get('types') in ['research-guides', 'archived-blog-posts'] else 'all',
+        'selected': request.args.get('types', 'all') if request.args.get('types') in ['research-guides', 'archived-blog-posts', 'education-and-outreach'] else 'all',
         'inline': True
       }) }}
-
-
-    </form>
-  </div>
+    </div>
+  </form>
 </div>
 {% if results %}
 <section>
