@@ -119,8 +119,9 @@ class Base(object):
     )
 
     BLACKLISTED_URLS_SQL_LIKE: list[str] = os.environ.get(
-        "BLACKLISTED_URLS_SQL_LIKE", ""
-    ).split() or ["https://blog.nationalarchives.gov.uk/tag/%"]
+        "BLACKLISTED_URLS_SQL_LIKE",
+        "https://blog.nationalarchives.gov.uk/tag/%,%.nationalarchives.gov.uk/im_guidance_link/%",
+    ).split(",")
 
     RESULTS_PER_PAGE: int = int(os.environ.get("RESULTS_PER_PAGE", "12"))
 

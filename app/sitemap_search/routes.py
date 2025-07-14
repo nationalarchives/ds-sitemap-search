@@ -99,10 +99,10 @@ def index():
                 sql_sub_query_parts.append(
                     sql.SQL(
                         """(
-                                (
+                                CASE WHEN {field} IS NOT NULL THEN (
                                     CHAR_LENGTH({field}) -
                                     CHAR_LENGTH(REPLACE(LOWER({field}), {query_part}, ''))
-                                ) * {weight}
+                                ) * {weight} ELSE 0 END
                             )"""
                     ).format(
                         field=sql.Identifier(field_name),
@@ -127,45 +127,54 @@ def index():
         requested_types = request.args.get("types", "all")
         if requested_types == "research-guides":
             types_sub_query = sql.SQL(
-                "AND url LIKE '%/help-with-your-research/research-guides/%'"
+                """AND "url" LIKE '%/help-with-your-research/research-guides/%'"""
             )
         elif requested_types == "archived-blog-posts":
             types_sub_query = sql.SQL(
-                "AND url LIKE 'https://blog.nationalarchives.gov.uk/%'"
+                """AND "url" LIKE 'https://blog.nationalarchives.gov.uk/%'"""
             )
+
+        blacklisted_urls = current_app.config.get("BLACKLISTED_URLS_SQL_LIKE")
+        blacklist_sub_where = (
+            sql.SQL(
+                """AND "url" NOT LIKE ALL({blacklisted_url_likes})"""
+            ).format(blacklisted_url_likes=sql.Literal(blacklisted_urls))
+            if blacklisted_urls
+            else sql.SQL("")
+        )
 
         # Create the main SQL query to fetch the results
         sql_query = sql.SQL(
-            """WITH scored_results AS (
+            """WITH "scored_results" AS (
                 SELECT
-                    id,
-                    title,
-                    url,
-                    description,
+                    "id",
+                    "title",
+                    "url",
+                    "description",
                     (
                         {search_sub_query}
                     ) *
                     (
                         CASE
-                            WHEN url LIKE {webarchive_domains} THEN {archived_weight}
+                            WHEN "url" LIKE {webarchive_domains} THEN {archived_weight}
                             ELSE 1
                         END
-                    ) AS relevance
-                FROM sitemap_urls
-                WHERE title IS NOT NULL
-                    AND url NOT LIKE ANY({blacklisted_url_likes})
+                    ) AS "relevance"
+                FROM "sitemap_urls"
+                WHERE "url" IS NOT NULL
+                    {blacklist_sub_where}
                     {types_sub_query}
             )
             SELECT
-                id,
-                title,
-                url,
-                description,
-                relevance,
-                (SELECT COUNT(*) FROM scored_results WHERE relevance > 0) AS total_results
-            FROM scored_results
-            WHERE relevance > 0
-            ORDER by relevance DESC
+                "id",
+                "title",
+                "url",
+                "description",
+                "relevance",
+                (SELECT COUNT(*) FROM "scored_results" WHERE "relevance" > 0) AS "total_results"
+            FROM "scored_results"
+            WHERE "relevance" > 0
+            ORDER BY "relevance" DESC
             LIMIT {limit}
             OFFSET {offset};""",
         ).format(
@@ -173,9 +182,7 @@ def index():
             archived_weight=sql.Literal(
                 current_app.config.get("RELEVANCE_ARCHIVED_WEIGHT")
             ),
-            blacklisted_url_likes=sql.Literal(
-                current_app.config.get("BLACKLISTED_URLS_SQL_LIKE")
-            ),
+            blacklist_sub_where=blacklist_sub_where,
             types_sub_query=types_sub_query,
             limit=sql.Literal(results_per_page),
             offset=sql.Literal((page - 1) * results_per_page),
@@ -216,7 +223,17 @@ def index():
         )
     else:
         # If there is no query, we just return the index page with no results
-        cur.execute("SELECT COUNT(*) AS total_results FROM sitemap_urls")
+        sql_query = sql.SQL(
+            """
+                    SELECT COUNT(*) AS total_results
+                    FROM sitemap_urls
+                    WHERE url NOT LIKE ANY({blacklisted_url_likes})"""
+        ).format(
+            blacklisted_url_likes=sql.Literal(
+                current_app.config.get("BLACKLISTED_URLS_SQL_LIKE")
+            )
+        )
+        cur.execute(sql_query)
         results = cur.fetchall()
 
         # Close the cursor and connection
