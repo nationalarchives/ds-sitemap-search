@@ -106,11 +106,19 @@ class Base(object):
         os.environ.get("RELEVANCE_TITLE_MATCH_WEIGHT", "5")
     )
     RELEVANCE_BODY_MATCH_WEIGHT: float = float(
-        os.environ.get("RELEVANCE_BODY_MATCH_WEIGHT", "1")
+        os.environ.get("RELEVANCE_BODY_MATCH_WEIGHT", "2")
+    )
+    RELEVANCE_URL_MATCH_WEIGHT: float = float(
+        os.environ.get("RELEVANCE_URL_MATCH_WEIGHT", "1")
     )
     RELEVANCE_ARCHIVED_WEIGHT: float = float(
         os.environ.get("RELEVANCE_ARCHIVED_WEIGHT", "0.5")
     )
+    RELEVANCE_QUOTE_MATCH_MULTIPLIER: float = float(
+        os.environ.get("RELEVANCE_QUOTE_MATCH_MULTIPLIER", "100")
+    )
+
+    RESULTS_PER_PAGE: int = int(os.environ.get("RESULTS_PER_PAGE", "12"))
 
 
 class Production(Base, Features):

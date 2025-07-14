@@ -14,5 +14,10 @@ def commafy(s):
 
 
 def mark(s, substring):
-    compiled = re.compile(f"({substring})", re.IGNORECASE)
+    substrings = [
+        re.escape(string.replace('"', "").strip())
+        for string in substring.split(" ")
+        if string
+    ]
+    compiled = re.compile(f"({"|".join(substrings)})", re.IGNORECASE)
     return compiled.sub(r"<mark>\g<0></mark>", s)

@@ -9,7 +9,7 @@
 
 {%- from 'sitemap_search/_discovery-search.html' import discoverySearch -%}
 
-{%- set pageTitle = 'Search results for "' + q + '"' if q else 'Search the site' -%}
+{%- set pageTitle = 'Search results for "' + (q.replace('"', '')) + '"' if q else 'Search the site' -%}
 
 {% block skipLink %}
 {% if q %}
@@ -51,7 +51,8 @@
         'hint': 'Find articles and research guides',
         'id': 'search',
         'name': 'q',
-        'value': q
+        'value': q,
+        'maxLength': 30,
       }) }}
     </form>
   </div>
@@ -61,7 +62,10 @@
   <div class="tna-container">
     <div id="results" class="tna-column tna-column--width-2-3 tna-column--full-small tna-column--full-tiny tna-!--margin-top-s">
       <h2 class="tna-visually-hidden">Results</h2>
-      <p class="tna-!--no-margin-top tna-!--padding-top-s">Showing {{ ((results_per_page * (page - 1)) + 1) | commafy }}&ndash;{{ (results_per_page * page if results_per_page * page < total_results else total_results) | commafy }} of {{ total_results | commafy }} results{% if q %} for &quot;{{ q }}&quot;{% endif %}</p>
+      <p class="tna-!--no-margin-top tna-!--padding-top-s">Showing <strong>{{ ((results_per_page * (page - 1)) + 1) | commafy }}&ndash;{{ (results_per_page * page if results_per_page * page < total_results else total_results) | commafy }}</strong> of <strong>{{ total_results | commafy }}</strong> results{% if query_parts %} for {% for part in query_parts -%}
+      {{ '' if loop.first else ', ' if not loop.last else ' or' }} &quot;{{ part }}&quot;
+      {%- endfor -%}
+      {% endif -%}</p>
       <ul class="tna-container tna-container--nested tna-!--margin-top-m">
         {% for result in results %}
         <li class="tna-column tna-column--full tna-!--margin-bottom-l">
