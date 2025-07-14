@@ -120,7 +120,7 @@ class Base(object):
 
     BLACKLISTED_URLS_SQL_LIKE: list[str] = os.environ.get(
         "BLACKLISTED_URLS_SQL_LIKE",
-        "https://blog.nationalarchives.gov.uk/tag/%,%.nationalarchives.gov.uk/im_guidance_link/%",
+        "https://blog.nationalarchives.gov.uk/tag/%,%.nationalarchives.gov.uk/im_guidance_link/%,%nationalarchives.gov.uk/category/new-chat/,%nationalarchives.gov.uk/category/records-2/",
     ).split(",")
 
     RESULTS_PER_PAGE: int = int(os.environ.get("RESULTS_PER_PAGE", "12"))
