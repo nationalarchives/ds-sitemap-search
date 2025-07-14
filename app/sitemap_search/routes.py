@@ -152,7 +152,9 @@ def index():
                         END
                     ) AS relevance
                 FROM sitemap_urls
-                WHERE title IS NOT NULL {types_sub_query}
+                WHERE title IS NOT NULL
+                    AND url NOT LIKE ANY({blacklisted_url_likes})
+                    {types_sub_query}
             )
             SELECT
                 id,
@@ -170,6 +172,9 @@ def index():
             search_sub_query=sql.SQL(" + ").join(sql_sub_queries),
             archived_weight=sql.Literal(
                 current_app.config.get("RELEVANCE_ARCHIVED_WEIGHT")
+            ),
+            blacklisted_url_likes=sql.Literal(
+                current_app.config.get("BLACKLISTED_URLS_SQL_LIKE")
             ),
             types_sub_query=types_sub_query,
             limit=sql.Literal(results_per_page),

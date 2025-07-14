@@ -118,6 +118,10 @@ class Base(object):
         os.environ.get("RELEVANCE_QUOTE_MATCH_MULTIPLIER", "100")
     )
 
+    BLACKLISTED_URLS_SQL_LIKE: list[str] = os.environ.get(
+        "BLACKLISTED_URLS_SQL_LIKE", ""
+    ).split() or ["https://blog.nationalarchives.gov.uk/tag/%"]
+
     RESULTS_PER_PAGE: int = int(os.environ.get("RESULTS_PER_PAGE", "12"))
 
 
