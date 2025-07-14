@@ -118,10 +118,19 @@ class Base(object):
         os.environ.get("RELEVANCE_QUOTE_MATCH_MULTIPLIER", "100")
     )
 
-    BLACKLISTED_URLS_SQL_LIKE: list[str] = os.environ.get(
-        "BLACKLISTED_URLS_SQL_LIKE",
-        "https://blog.nationalarchives.gov.uk/tag/%,%.nationalarchives.gov.uk/im_guidance_link/%,%nationalarchives.gov.uk/category/new-chat/,%nationalarchives.gov.uk/category/records-2/",
-    ).split(",")
+    BLACKLISTED_URLS_SQL_LIKE: list[str] = [
+        blacklisted_url
+        for blacklisted_url in os.environ.get(
+            "BLACKLISTED_URLS_SQL_LIKE",
+            "",
+        ).split(",")
+        if blacklisted_url
+    ] or [
+        "https://blog.nationalarchives.gov.uk/tag/%",
+        "%.nationalarchives.gov.uk/im_guidance_link/%",
+        "%nationalarchives.gov.uk/category/new-chat/%",
+        "%nationalarchives.gov.uk/category/records-2/%",
+    ]
 
     RESULTS_PER_PAGE: int = int(os.environ.get("RESULTS_PER_PAGE", "12"))
 
