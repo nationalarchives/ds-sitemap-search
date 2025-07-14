@@ -118,7 +118,7 @@ class Base(object):
         os.environ.get("RELEVANCE_ARCHIVED_WEIGHT", "0.5")
     )
     RELEVANCE_QUOTE_MATCH_MULTIPLIER: float = float(
-        os.environ.get("RELEVANCE_QUOTE_MATCH_MULTIPLIER", "100")
+        os.environ.get("RELEVANCE_QUOTE_MATCH_MULTIPLIER", "250")
     )
 
     BLACKLISTED_URLS_SQL_LIKE: list[str] = [
