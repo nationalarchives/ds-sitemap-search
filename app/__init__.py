@@ -5,7 +5,7 @@ from app.lib.cache import cache
 from app.lib.context_processor import cookie_preference, now_iso_8601
 from app.lib.talisman import talisman
 from app.lib.template_filters import commafy, mark, slugify
-from app.lib.urls import is_url_archived, use_archived_url
+from app.lib.urls import is_url_archived
 from flask import Flask
 from jinja2 import ChoiceLoader, PackageLoader
 
@@ -127,7 +127,6 @@ def create_app(config_class):
     app.add_template_filter(commafy)
     app.add_template_filter(mark)
     app.add_template_filter(slugify)
-    app.add_template_filter(use_archived_url)
     app.add_template_filter(is_url_archived)
 
     @app.context_processor

@@ -1,4 +1,4 @@
-from config import ARCHIVE_REMAP, DOMAIN_REMAPS
+from config import ARCHIVED_URLS, DOMAIN_REMAPS
 
 
 def correct_url(url):
@@ -8,15 +8,8 @@ def correct_url(url):
     return url
 
 
-def use_archived_url(url):
-    for domain, replacement in ARCHIVE_REMAP.items():
-        if url.startswith(domain):
-            return url.replace(domain, replacement)
-    return url
-
-
 def is_url_archived(url):
-    for archive_domain in ARCHIVE_REMAP.keys():
-        if url.startswith(archive_domain):
+    for archived_url in ARCHIVED_URLS:
+        if url.startswith(archived_url):
             return True
     return False

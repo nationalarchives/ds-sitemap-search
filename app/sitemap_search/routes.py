@@ -39,7 +39,7 @@ def index():
 
     # Get the web archive domains from the config - this is used to determine if a URL
     # is archived and should have a different relevance weight
-    webarchive_domains = current_app.config.get("ARCHIVE_REMAP").keys()
+    webarchive_domains = current_app.config.get("ARCHIVED_URLS")
 
     # Start a connection to the database and create a cursor
     conn = psycopg2.connect(

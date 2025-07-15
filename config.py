@@ -8,9 +8,7 @@ DOMAIN_REMAPS = {
     "http://website.staging.local/": "https://staging-www.nationalarchives.gov.uk/",
     "http://website.dev.local/": "https://dev-www.nationalarchives.gov.uk/",
 }
-ARCHIVE_REMAP = {
-    "https://blog.nationalarchives.gov.uk/": "https://webarchive.nationalarchives.gov.uk/ukgwa/20250613141122/https://blog.nationalarchives.gov.uk/",
-}
+ARCHIVED_URLS = ["https://blog.nationalarchives.gov.uk/"]
 
 
 class Features(object):
@@ -45,7 +43,6 @@ class Base(object):
     DEBUG: bool = strtobool(os.getenv("DEBUG", "False"))
 
     SENTRY_DSN: str = os.getenv("SENTRY_DSN", "")
-    SENTRY_JS_ID: str = os.getenv("SENTRY_JS_ID", "")
     SENTRY_SAMPLE_RATE: float = float(os.getenv("SENTRY_SAMPLE_RATE", "0.1"))
 
     COOKIE_DOMAIN: str = os.environ.get("COOKIE_DOMAIN", "")
@@ -98,9 +95,11 @@ class Base(object):
     DOMAIN_REMAPS: dict = (
         json.loads(os.environ.get("DOMAIN_REMAPS", "{}")) or DOMAIN_REMAPS
     )
-    ARCHIVE_REMAP: dict = (
-        json.loads(os.environ.get("ARCHIVE_REMAP", "{}")) or ARCHIVE_REMAP
-    )
+    ARCHIVED_URLS: list[str] = [
+        archived_url
+        for archived_url in os.environ.get("ARCHIVED_URLS", "").split(",")
+        if archived_url
+    ] or ARCHIVED_URLS
 
     RELEVANCE_TITLE_MATCH_WEIGHT: float = float(
         os.environ.get("RELEVANCE_TITLE_MATCH_WEIGHT", "50")
