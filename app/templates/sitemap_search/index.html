@@ -89,7 +89,7 @@
 {% if results %}
 <section>
   <div class="tna-container">
-    <div id="results" class="tna-column tna-column--width-2-3 tna-column--full-small tna-column--full-tiny tna-!--margin-top-s">
+    <div id="results" class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--margin-top-s">
       <h2 class="tna-visually-hidden">Results</h2>
       <p class="tna-!--no-margin-top tna-!--padding-top-s">Showing <strong>{{ ((results_per_page * (page - 1)) + 1) | commafy }}&ndash;{{ (results_per_page * page if results_per_page * page < total_results else total_results) | commafy }}</strong> of <strong>{{ total_results | commafy }}</strong> results{% if query_parts %} for {% for part in query_parts -%}
       {{ '' if loop.first else ', ' if not loop.last else ' or' }} &quot;{{ part }}&quot;
@@ -118,7 +118,7 @@
       {{ tnaPagination(pagination) }}
       {% endif %}
     </div>
-    <div class="tna-column tna-column--width-1-3 tna-column--full-small tna-column--full-tiny tna-!--margin-top-l">
+    <div class="tna-column tna-column--width-1-3 tna-column--width-5-6-medium tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--margin-top-l">
       {{ discoverySearch(q) }}
     </div>
   </div>
@@ -137,14 +137,31 @@
       {%- endif %}
     </ul>
   </div>
-  <div class="tna-column tna-column--width-1-3 tna-column--full-small tna-column--full-tiny tna-!--margin-top-l">
+  <div class="tna-column tna-column--width-1-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--margin-top-l">
     {{ discoverySearch(q) }}
   </div>
 </div>
 {% else %}
 <div class="tna-container">
   <div class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--margin-vertical-m">
-    <p>{{ total_results | commafy }} pages indexed</p>
+    <p><strong>{{ total_results | commafy }}</strong> pages indexed</p>
+    <h2 class="tna-heading-l">Example searches</h2>
+    <ul class="tna-ul">
+      <li>
+        <a href="?q=&quot;section+28&quot;&types=all">Find out about Section 28</a>
+      </li>
+      <li>
+        <a href="?q=ufo&types=research-guides">Get help with how to research UFOs</a>
+      </li>
+      <li>
+        <a href="?q=Vicky+Iglikowski-Broad&types=archived-blog-posts">Read archived blog posts by Vicky Iglikowski-Broad</a>
+      </li>
+      <li>
+        <a href="?q=tudors&types=education-and-outreach">See our educational resources about Tudors</a>
+      </li>
+    </ul>
+  </div>
+  <div class="tna-column tna-column--width-1-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--margin-top-l">
     {{ discoverySearch(q) }}
   </div>
 </div>
