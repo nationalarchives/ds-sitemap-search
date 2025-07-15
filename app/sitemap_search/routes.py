@@ -26,8 +26,9 @@ def index():
     using Wagtail.
     """
 
-    # Get the query
-    query = unquote(request.args.get("q", "")).strip()
+    # Get the query and remove any asterisks or leading/trailing whitespace as
+    # asterisks will break the search query
+    query = unquote(request.args.get("q", "")).replace("*", "").strip()
 
     # Get the requested page number, default to 1 if not provided or invalid
     page = (
