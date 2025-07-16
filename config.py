@@ -128,7 +128,7 @@ class Base(object):
         ).split(",")
         if blacklisted_url
     ] or [
-        "https://blog.nationalarchives.gov.uk/tag/%",
+        "%.nationalarchives.gov.uk/tag/%",
         "%.nationalarchives.gov.uk/im_guidance_link/%",
         "%nationalarchives.gov.uk/category/new-chat/%",
         "%nationalarchives.gov.uk/category/records-2/%",
