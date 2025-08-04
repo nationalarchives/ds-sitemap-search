@@ -102,22 +102,22 @@ class Base(object):
     ] or ARCHIVED_URLS
 
     RELEVANCE_TITLE_MATCH_WEIGHT: float = float(
-        os.environ.get("RELEVANCE_TITLE_MATCH_WEIGHT", "50")
+        os.environ.get("RELEVANCE_TITLE_MATCH_WEIGHT", "250")
     )
     RELEVANCE_DESCRIPTION_MATCH_WEIGHT: float = float(
-        os.environ.get("RELEVANCE_DESCRIPTION_MATCH_WEIGHT", "10")
-    )
-    RELEVANCE_BODY_MATCH_WEIGHT: float = float(
-        os.environ.get("RELEVANCE_BODY_MATCH_WEIGHT", "2")
+        os.environ.get("RELEVANCE_DESCRIPTION_MATCH_WEIGHT", "50")
     )
     RELEVANCE_URL_MATCH_WEIGHT: float = float(
-        os.environ.get("RELEVANCE_URL_MATCH_WEIGHT", "1")
+        os.environ.get("RELEVANCE_URL_MATCH_WEIGHT", "5")
+    )
+    RELEVANCE_BODY_MATCH_WEIGHT: float = float(
+        os.environ.get("RELEVANCE_BODY_MATCH_WEIGHT", "1")
     )
     RELEVANCE_ARCHIVED_WEIGHT: float = float(
         os.environ.get("RELEVANCE_ARCHIVED_WEIGHT", "0.5")
     )
     RELEVANCE_QUOTE_MATCH_MULTIPLIER: float = float(
-        os.environ.get("RELEVANCE_QUOTE_MATCH_MULTIPLIER", "250")
+        os.environ.get("RELEVANCE_QUOTE_MATCH_MULTIPLIER", "1000")
     )
 
     BLACKLISTED_URLS_SQL_LIKE: list[str] = [
