@@ -148,11 +148,7 @@ class Staging(Base, Features):
 
 
 class Develop(Base, Features):
-    DEBUG = strtobool(os.getenv("DEBUG", "True"))
-
     SENTRY_SAMPLE_RATE = float(os.getenv("SENTRY_SAMPLE_RATE", "0"))
-
-    FORCE_HTTPS = strtobool(os.getenv("FORCE_HTTPS", "False"))
 
     CACHE_DEFAULT_TIMEOUT = int(os.environ.get("CACHE_DEFAULT_TIMEOUT", "1"))
 
