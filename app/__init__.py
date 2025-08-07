@@ -152,6 +152,7 @@ def create_app(config_class):
 
     app.register_blueprint(site_bp)
     app.register_blueprint(healthcheck_bp, url_prefix="/healthcheck")
-    app.register_blueprint(sitemap_search_bp, url_prefix="/search")
+    # app.register_blueprint(sitemap_search_bp, url_prefix="/search")
+    app.register_blueprint(sitemap_search_bp)
 
     return app
