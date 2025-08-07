@@ -13,7 +13,7 @@ from flask import current_app, render_template, request
 from psycopg2 import sql
 
 
-@bp.route("/search")
+@bp.route("/search/")
 @cache.cached(key_prefix=cache_key_prefix)
 def index():
     """
