@@ -268,3 +268,9 @@ def index():
             results_per_page=results_per_page,
             pagination={},
         )
+
+
+@bp.route("/healthcheck/")
+def temp_healthcheck():
+    # This is a temporary healthcheck endpoint to ensure the service is running.
+    return "OK", 200
