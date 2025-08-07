@@ -30,6 +30,10 @@ def index():
     # asterisks will break the search query
     query = unquote(request.args.get("q", "")).replace("*", "").strip()
 
+    # Get the requested types from the query parameters, default to "all" if not provided
+    # or invalid. This is used to filter the results by type, e.g. research guides
+    requested_types = request.args.get("types", "all")
+
     # Get the requested page number, default to 1 if not provided or invalid
     page = (
         int(request.args.get("page"))
@@ -52,7 +56,7 @@ def index():
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     # If there is a query, we need to search the database
-    if query:
+    if query or requested_types != "all":
         # Create an empty set to hold quoted query parts
         # This is used to give more weight to exact matches in quotes
         quoted_query_parts = set()
@@ -131,7 +135,6 @@ def index():
 
         # Add a sub-query to filter by types if requested
         types_sub_query = sql.SQL("")
-        requested_types = request.args.get("types", "all")
         if requested_types == "research-guides":
             types_sub_query = sql.SQL(
                 """
@@ -188,11 +191,16 @@ def index():
                 (SELECT COUNT(*) FROM "scored_results" WHERE "relevance" > 0) AS "total_results"
             FROM "scored_results"
             WHERE "relevance" > 0
-            ORDER BY "relevance" DESC
+            ORDER BY "relevance" DESC,
+                "title" ASC
             LIMIT {limit}
             OFFSET {offset};""",
         ).format(
-            search_sub_query=sql.SQL(" + ").join(sql_sub_queries),
+            search_sub_query=(
+                sql.SQL(" + ").join(sql_sub_queries)
+                if sql_sub_queries
+                else sql.SQL("1")
+            ),
             archived_weight=sql.Literal(
                 current_app.config.get("RELEVANCE_ARCHIVED_WEIGHT")
             ),
