@@ -8,7 +8,9 @@ DOMAIN_REMAPS = {
     "http://website.staging.local/": "https://staging-www.nationalarchives.gov.uk/",
     "http://website.dev.local/": "https://dev-www.nationalarchives.gov.uk/",
 }
-ARCHIVED_URLS = ["https://blog.nationalarchives.gov.uk/"]
+ARCHIVED_URLS = [
+    "https://blog.nationalarchives.gov.uk/",
+]
 
 
 class Features(object):
@@ -92,14 +94,23 @@ class Base(object):
 
     GA4_ID: str = os.environ.get("GA4_ID", "")
 
-    DOMAIN_REMAPS: dict = (
-        json.loads(os.environ.get("DOMAIN_REMAPS", "{}")) or DOMAIN_REMAPS
+    DOMAIN_REMAPS: dict = DOMAIN_REMAPS | (
+        json.loads(os.environ.get("DOMAIN_REMAPS", "{}"))
     )
     ARCHIVED_URLS: list[str] = [
-        archived_url
-        for archived_url in os.environ.get("ARCHIVED_URLS", "").split(",")
-        if archived_url
-    ] or ARCHIVED_URLS
+        domain
+        for domain in (
+            ARCHIVED_URLS
+            + [
+                archived_url
+                for archived_url in os.environ.get("ARCHIVED_URLS", "").split(
+                    ","
+                )
+                if archived_url
+            ]
+        )
+        if domain
+    ]
 
     RELEVANCE_TITLE_MATCH_WEIGHT: float = float(
         os.environ.get("RELEVANCE_TITLE_MATCH_WEIGHT", "250")

@@ -9,6 +9,8 @@ import requests
 from app.lib.sitemaps import get_urls_from_sitemap
 from app.lib.urls import correct_url
 from bs4 import BeautifulSoup
+from config import DOMAIN_REMAPS
+from psycopg2 import sql
 
 
 def padded_enumeration(number, total):
@@ -88,12 +90,33 @@ class Engine(object):
             body = soup.find("main") or soup.find(role="main") or soup.body
             body = re.sub(r"\n+\s*", "\n", body.text).strip() if body else ""
 
-            if url not in self.existing_urls:
+            fixed_url = correct_url(url)
+
+            if (
+                url not in self.existing_urls
+                and fixed_url not in self.existing_urls
+            ):
                 # The URL does not exist, insert it
-                cur.execute(
-                    "INSERT INTO sitemap_urls (title, url, description, body) VALUES (%s, %s, %s, %s);",
-                    (title, url, description, body),
+                query = sql.SQL(
+                    """INSERT INTO sitemap_urls (
+                        title,
+                        url,
+                        description,
+                        body
+                    ) VALUES (
+                        {title},
+                        {url},
+                        {description},
+                        {body}
+                    );"""
+                ).format(
+                    title=sql.Literal(title),
+                    url=sql.Literal(url),
+                    description=sql.Literal(description),
+                    body=sql.Literal(body),
                 )
+                cur.execute(query)
+
                 print(
                     f"✅ {padded_enumeration(index + 1, self.num_urls)} [ ADDED ] {url}"
                 )
@@ -101,10 +124,25 @@ class Engine(object):
                 self.existing_urls = existing_urls
             else:
                 # The URL exists, update it
-                cur.execute(
-                    "UPDATE sitemap_urls SET title = %s, description = %s, body = %s, date_updated = CURRENT_TIMESTAMP WHERE url = %s;",
-                    (title, description, body, url),
+                url_to_update = url if url in self.existing_urls else fixed_url
+
+                query = sql.SQL(
+                    """UPDATE sitemap_urls SET
+                        url = {url},
+                        title = {title},
+                        description = {description},
+                        body = {body},
+                        date_updated = CURRENT_TIMESTAMP
+                    WHERE url = {url_to_update};"""
+                ).format(
+                    url=sql.Literal(fixed_url),
+                    title=sql.Literal(title),
+                    description=sql.Literal(description),
+                    body=sql.Literal(body),
+                    url_to_update=sql.Literal(url_to_update),
                 )
+                cur.execute(query)
+
                 print(
                     f"✅ {padded_enumeration(index + 1, self.num_urls)} [UPDATED] {url}"
                 )
@@ -165,6 +203,52 @@ def populate(skip_existing=False, drop_table=False):
         process_sitemap(sitemap, skip_existing)
 
     SingletonDB().close_connection()
+
+
+def fix_remapped_domains():
+    conn = SingletonDB().get_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    cur.execute(sql.SQL("SELECT id, url FROM sitemap_urls;"))
+    all_entries = cur.fetchall()
+
+    for old_domain, new_domain in DOMAIN_REMAPS.items():
+        cur.execute(
+            sql.SQL(
+                "SELECT id, url FROM sitemap_urls WHERE url LIKE {old_domain};"
+            ).format(old_domain=sql.Literal(f"%{old_domain}%"))
+        )
+        matching_old_domain_entries = cur.fetchall()
+        for entry in matching_old_domain_entries:
+            id = entry["id"]
+            url = entry["url"]
+            remapped_url = correct_url(url)
+
+            # If the remapped domain is already in the database, delete it
+            if remapped_url in [e["url"] for e in all_entries]:
+                cur.execute(
+                    sql.SQL("DELETE FROM sitemap_urls WHERE id = {id};").format(
+                        id=sql.Literal(id)
+                    )
+                )
+                print(f"Deleted existing URL: {remapped_url}")
+
+        query = sql.SQL(
+            """
+            UPDATE sitemap_urls SET
+                url = REPLACE(url, {old_domain}, {new_domain})
+            WHERE url LIKE {like_old_domain};
+        """
+        ).format(
+            old_domain=sql.Literal(old_domain),
+            new_domain=sql.Literal(new_domain),
+            like_old_domain=sql.Literal(f"%{old_domain}%"),
+        )
+        cur.execute(query)
+        print(f"Updated URLs from {old_domain} to {new_domain}")
+
+    conn.commit()
+    cur.close()
 
 
 if __name__ == "__main__":
