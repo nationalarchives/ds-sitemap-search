@@ -1,3 +1,9 @@
 site_name: Flask Application Docs
 repo_url: https://github.com/nationalarchives/flask-application-template
 dev_addr: 0.0.0.0:1081
+extra_javascript:
+  - javascripts/katex.js
+  - https://unpkg.com/katex@0/dist/katex.min.js
+  - https://unpkg.com/katex@0/dist/contrib/auto-render.min.js
+extra_css:
+  - https://unpkg.com/katex@0/dist/katex.min.css

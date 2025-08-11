@@ -34,6 +34,9 @@ docker compose exec app poetry run python add_new.py
 # Add new URLs from a specific sitemap
 docker compose exec app poetry run python add_new.py https://blog.nationalarchives.gov.uk/sitemap.xml
 
+# Fix URLs with remapped domains (e.g. website.live.local)
+docker compose exec app poetry run python fix_remapped_domains.py
+
 # Drop all URLs and re-index - THIS IS A DESTRUCTIVE ACTION
 docker compose exec app poetry run python clean.py
 ```
