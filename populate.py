@@ -163,14 +163,12 @@ def process_sitemap(sitemap, skip_existing=False):
     cur.close()
 
     urls = get_urls_from_sitemap(sitemap)
-    try:
-        pool = Pool()
+    with Pool() as pool:
         engine = Engine(len(urls), existing_urls, skip_existing)
         pool.map(engine, [(index, url) for index, url in enumerate(urls)], 1)
-    finally:
-        pool.close()
-        pool.join()
-        print(f"Finished processing {sitemap}")
+    pool.close()
+    pool.join()
+    print(f"Finished processing {sitemap}")
 
     SingletonDB().close_connection()
 
@@ -252,9 +250,9 @@ def fix_remapped_domains():
 
 
 if __name__ == "__main__":
-    try:
+    if len(sys.argv) > 1:
         sitemap = sys.argv[1]
         process_sitemap(sitemap=sitemap)
-    except IndexError:
+    else:
         populate()
     exit(0)
