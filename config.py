@@ -13,15 +13,16 @@ ARCHIVED_URLS = [
 ]
 
 
-class Features(object):
+class Features:
     FEATURE_PHASE_BANNER: bool = strtobool(
         os.getenv("FEATURE_PHASE_BANNER", "True")
     )
 
 
-class Base(object):
+class Production(Features):
     ENVIRONMENT_NAME: str = os.environ.get("ENVIRONMENT_NAME", "production")
 
+    CONTAINER_IMAGE: str = os.environ.get("CONTAINER_IMAGE", "")
     BUILD_VERSION: str = os.environ.get("BUILD_VERSION", "")
     TNA_FRONTEND_VERSION: str = ""
     try:
@@ -148,23 +149,19 @@ class Base(object):
     RESULTS_PER_PAGE: int = int(os.environ.get("RESULTS_PER_PAGE", "12"))
 
 
-class Production(Base, Features):
-    pass
-
-
-class Staging(Base, Features):
+class Staging(Production, Features):
     SENTRY_SAMPLE_RATE = float(os.getenv("SENTRY_SAMPLE_RATE", "1"))
 
     CACHE_DEFAULT_TIMEOUT = int(os.environ.get("CACHE_DEFAULT_TIMEOUT", "60"))
 
 
-class Develop(Base, Features):
+class Develop(Production, Features):
     SENTRY_SAMPLE_RATE = float(os.getenv("SENTRY_SAMPLE_RATE", "0"))
 
     CACHE_DEFAULT_TIMEOUT = int(os.environ.get("CACHE_DEFAULT_TIMEOUT", "1"))
 
 
-class Test(Base, Features):
+class Test(Production, Features):
     ENVIRONMENT_NAME = "test"
 
     DEBUG = True
