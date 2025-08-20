@@ -13,7 +13,7 @@ from flask import current_app, render_template, request
 
 
 @bp.route("/")
-# @cache.cached(key_prefix=cache_key_prefix)
+@cache.cached(key_prefix=cache_key_prefix)
 def index():
     """
     Search the sitemap database for URLs matching the query.
