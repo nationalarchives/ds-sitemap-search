@@ -53,7 +53,12 @@ def index():
     # If there is a query, we need to search the database
     if query or requested_types != "all":
         query_parts, quoted_query_parts = get_query_parts(query)
-        sql_query = contruct_search_query(query, requested_types)
+        sql_query = contruct_search_query(
+            query=query,
+            requested_types=requested_types,
+            page=page,
+            results_per_page=results_per_page,
+        )
         cur.execute(sql_query)
 
         # Get all the results
