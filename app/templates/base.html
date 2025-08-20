@@ -54,7 +54,7 @@
 {% if 'cookie_preferences_set' not in request.cookies or not request.cookies.get('cookie_preferences_set') %}
 {{ tnaCookieBanner({
   'serviceName': 'The National Archives',
-  'cookiesUrl': 'https://www.nationalarchives.gov.uk/legal/cookies/',
+  'cookiesUrl': 'https://www.nationalarchives.gov.uk/cookies/',
   'preferencesSetKey': 'dontShowCookieNotice'
 }) | indent(6) }}
 {% endif %}
@@ -93,11 +93,11 @@
     },
     {
       'text': 'What’s on',
-      'href': 'https://www.nationalarchives.gov.uk/about/visit-us/whats-on/'
+      'href': 'https://www.nationalarchives.gov.uk/whats-on/'
     },
     {
       'text': 'Explore the collection',
-      'href': '/explore-the-collection/'
+      'href': 'https://www.nationalarchives.gov.uk/explore-the-collection/'
     },
     {
       'text': 'Help using the archive',
@@ -164,12 +164,12 @@
           'href': 'https://www.nationalarchives.gov.uk/about/news/'
         },
         {
-          'text': 'Blog',
+          'text': 'Blogs',
           'href': 'https://www.nationalarchives.gov.uk/blogs/'
         },
         {
-          'text': 'Podcasts',
-          'href': 'https://media.nationalarchives.gov.uk/index.php/category/podcasts-2/'
+          'text': 'Podcast',
+          'href': 'https://www.nationalarchives.gov.uk/explore-the-collection/on-the-record-podcast/'
         },
         {
           'text': 'Image library',
@@ -247,7 +247,7 @@
     },
     {
       'text': 'Cookies',
-      'href': 'https://www.nationalarchives.gov.uk/legal/cookies/'
+      'href': 'https://www.nationalarchives.gov.uk/cookies/'
     }
   ],
   'classes': '' if no_footer_top_margin else 'tna-!--margin-top-l'
