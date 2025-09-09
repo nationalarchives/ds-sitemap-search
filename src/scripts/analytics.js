@@ -1,23 +1,22 @@
 import {
   GA4,
-  // helpers,
+  helpers,
 } from "@nationalarchives/frontend/nationalarchives/analytics.mjs";
 
 const ga4Id = document.documentElement.getAttribute("data-ga4id");
 if (ga4Id) {
-  new GA4({ id: ga4Id });
-  // const analytics = new GA4({ id: ga4Id });
+  const analytics = new GA4({ id: ga4Id });
 
-  // analytics.addListeners(document.documentElement, "document", [
-  //   {
-  //     eventName: "double_click",
-  //     on: "dblclick",
-  //     data: {
-  //       // eslint-disable-next-line no-unused-vars
-  //       state: ($el, $scope, event, index) => helpers.getXPathTo(event.target),
-  //       // eslint-disable-next-line no-unused-vars
-  //       value: ($el, $scope, event, index) => event.target.innerHTML,
-  //     },
-  //   },
-  // ]);
+  analytics.addListeners("#results", "results", [
+    {
+      eventName: "select_result",
+      on: "click",
+      targetElement: ".tna-card__heading-link",
+      data: {
+        state: ($el) =>
+          parseInt($el.closest(".tna-card")?.dataset.resultPosition || "0"),
+        value: helpers.valueGetters.text,
+      },
+    },
+  ]);
 }

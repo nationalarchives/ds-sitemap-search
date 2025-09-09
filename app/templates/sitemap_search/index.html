@@ -107,7 +107,8 @@
             'fullAreaClick': True,
             'attributes': {
               'data-id': result.id,
-              'data-relevance': result.relevance
+              'data-relevance': result.relevance,
+              'data-result-position': ((results_per_page * (page - 1)) + loop.index)
             }
           }) }}
         </li>
