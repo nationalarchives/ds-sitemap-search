@@ -115,13 +115,18 @@ class Engine(object):
                     description=sql.Literal(description),
                     body=sql.Literal(body),
                 )
-                cur.execute(query)
+                try:
+                    cur.execute(query)
+                except Exception as e:
+                    print(
+                        f"⚠️ {padded_enumeration(index + 1, self.num_urls)} [ ERROR ] {url} - {e}"
+                    )
+                    return
 
                 print(
                     f"✅ {padded_enumeration(index + 1, self.num_urls)} [ ADDED ] {url}"
                 )
-                existing_urls = self.existing_urls + [url]
-                self.existing_urls = existing_urls
+                self.existing_urls.append(url)
             else:
                 # The URL exists, update it
                 url_to_update = url if url in self.existing_urls else fixed_url
@@ -141,10 +146,16 @@ class Engine(object):
                     body=sql.Literal(body),
                     url_to_update=sql.Literal(url_to_update),
                 )
-                cur.execute(query)
+                try:
+                    cur.execute(query)
+                except Exception as e:
+                    print(
+                        f"⚠️ {padded_enumeration(index + 1, self.num_urls)} [ ERROR ] {url} - {e}"
+                    )
+                    return
 
                 print(
-                    f"✅ {padded_enumeration(index + 1, self.num_urls)} [UPDATED] {url}"
+                    f"✅ {padded_enumeration(index + 1, self.num_urls)} [UPDATED] {fixed_url})"
                 )
             conn.commit()
             cur.close()
