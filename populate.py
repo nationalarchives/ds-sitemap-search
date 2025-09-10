@@ -121,6 +121,7 @@ class Engine(object):
                     print(
                         f"⚠️ {padded_enumeration(index + 1, self.num_urls)} [ ERROR ] {url} - {e}"
                     )
+                    cur.close()
                     return
 
                 print(
@@ -152,6 +153,7 @@ class Engine(object):
                     print(
                         f"⚠️ {padded_enumeration(index + 1, self.num_urls)} [ ERROR ] {url} - {e}"
                     )
+                    cur.close()
                     return
 
                 print(
