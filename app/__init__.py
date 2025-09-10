@@ -4,7 +4,7 @@ import sentry_sdk
 from app.lib.cache import cache
 from app.lib.context_processor import cookie_preference, now_iso_8601
 from app.lib.talisman import talisman
-from app.lib.template_filters import commafy, mark, slugify
+from app.lib.template_filters import commafy, mark, result_type, slugify
 from app.lib.urls import correct_url, is_url_archived
 from flask import Flask
 from jinja2 import ChoiceLoader, PackageLoader
@@ -128,6 +128,7 @@ def create_app(config_class):
     app.add_template_filter(correct_url)
     app.add_template_filter(is_url_archived)
     app.add_template_filter(mark)
+    app.add_template_filter(result_type)
     app.add_template_filter(slugify)
 
     @app.context_processor

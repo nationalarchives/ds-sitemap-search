@@ -55,7 +55,7 @@
         'maxLength': 30
       }) }}
     </div>
-    <div class="tna-column tna-column--full tna-!--margin-top-s">
+    <!-- <div class="tna-column tna-column--full tna-!--margin-top-s">
       {{ tnaRadios({
         'label': 'Page types',
         'headingSize': 's',
@@ -82,7 +82,7 @@
         'selected': request.args.get('types', 'all') if request.args.get('types') in ['research-guides', 'archived-blog-posts', 'education-and-outreach'] else 'all',
         'inline': True
       }) }}
-    </div>
+    </div> -->
   </form>
 </div>
 {% if results %}
@@ -98,7 +98,7 @@
         {% for result in results %}
         <li class="tna-column tna-column--full tna-!--margin-bottom-l">
           {{ tnaCard({
-            'supertitle': 'Archived' if (result.url | correct_url | is_url_archived) else 'Research guide' if '/help-with-your-research/research-guides/' in result.url else '',
+            'supertitle': result.url | result_type,
             'headingLevel': 3,
             'headingSize': 's',
             'title': result.title.replace(', Author at The National Archives blog', '').replace(' - The National Archives blog', '').replace(' - The National Archives Design System', '').replace(' - The National Archives', '') | mark(query_parts) | safe if result.title else '[No title]',

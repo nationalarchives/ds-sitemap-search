@@ -1,5 +1,7 @@
 import re
 
+from app.lib.urls import correct_url, is_url_archived
+
 
 def slugify(s):
     s = s.lower().strip()
@@ -11,6 +13,17 @@ def slugify(s):
 
 def commafy(s):
     return "{:,}".format(s)
+
+
+def result_type(url):
+    url = correct_url(url)
+    if is_url_archived(url):
+        return "Archived"
+    if "/help-with-your-research/research-guides/" in url:
+        return "Research guide"
+    # if "/education/resources/" in url:
+    #     return "Education resource"
+    return ""
 
 
 def mark(s, substrings):
