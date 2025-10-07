@@ -2,7 +2,8 @@
 
 {% macro discoverySearch(query) %}
 <form class="tna-aside tna-aside--tight tna-background-accent" method="get" action="https://discovery.nationalarchives.gov.uk/results/r" role="search">
-  <!-- {{ tnaSearchField({
+  {#
+  {{ tnaSearchField({
     'label': 'Looking for particular records? Search our catalogue',
     'headingLevel': 2,
     'headingSize': 'm',
@@ -10,8 +11,9 @@
     'id': 'search-discovery',
     'name': '_q',
     'value': query,
-    'formGroupClasses': 'discovery-search'
-  }) }} -->
+    'formItemClasses': 'discovery-search'
+  }) }}
+  #}
   <h2 class="tna-heading-m">Looking for particular records? Search our catalogue</h2>
   <p>Our catalogue, Discovery, holds more than 37 million descriptions of records held by The National Archives and archives across the country.</p>
   {% if query %}
