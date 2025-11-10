@@ -112,6 +112,7 @@ class Production(Features):
         )
         if domain
     ]
+
     MAX_QUERY_PARTS: int = int(os.environ.get("MAX_QUERY_PARTS", "12"))
 
     RELEVANCE_TITLE_MATCH_WEIGHT: float = float(
