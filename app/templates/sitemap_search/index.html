@@ -6,6 +6,7 @@
 {%- from 'components/radios/macro.html' import tnaRadios -%}
 {%- from 'components/search-field/macro.html' import tnaSearchField -%}
 {%- from 'components/skip-link/macro.html' import tnaSkipLink -%}
+{%- from 'components/warning/macro.html' import tnaWarning -%}
 
 {%- from 'sitemap_search/_discovery-search.html' import discoverySearch -%}
 
@@ -87,6 +88,18 @@
     #}
   </form>
 </div>
+
+{% if query_exceeds_max_length %}
+<div class="tna-container">
+  <div class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--margin-top-m">
+    {{ tnaWarning({
+      'headingLevel': 2,
+      'body': 'Your search query exceeded the maximum length of ' ~ max_query_length ~ ' characters and has been truncated. Use a shorter query for more accurate results.'
+    }) }}
+  </div>
+</div>
+{% endif %}
+
 {% if results %}
 <section>
   <div class="tna-container">

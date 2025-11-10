@@ -25,9 +25,18 @@ def index():
     using Wagtail.
     """
 
+    # Get the maximum query length from the config
+    max_query_length = current_app.config.get("MAX_QUERY_LENGTH")
+
     # Get the query and remove any asterisks or leading/trailing whitespace as
     # asterisks will break the search query
     query = unquote(request.args.get("q", "")).replace("*", "").strip()
+
+    # Check if the query exceeds the maximum length
+    query_exceeds_max_length = len(query) > max_query_length
+
+    # Truncate the query to the maximum length
+    query = query[:max_query_length]
 
     # Get the requested types from the query parameters, default to "all" if not provided
     # or invalid. This is used to filter the results by type, e.g. research guides
@@ -82,6 +91,8 @@ def index():
             "sitemap_search/index.html",
             q=query,
             query_parts=query_parts,
+            max_query_length=max_query_length,
+            query_exceeds_max_length=query_exceeds_max_length,
             page=page,
             pages=pages,
             results=results,

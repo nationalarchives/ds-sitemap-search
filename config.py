@@ -112,6 +112,7 @@ class Production(Features):
         )
         if domain
     ]
+    MAX_QUERY_LENGTH: int = int(os.environ.get("MAX_QUERY_LENGTH", "30"))
 
     RELEVANCE_TITLE_MATCH_WEIGHT: float = float(
         os.environ.get("RELEVANCE_TITLE_MATCH_WEIGHT", "250")
