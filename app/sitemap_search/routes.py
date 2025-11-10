@@ -1,5 +1,6 @@
 import math
 import os
+import unicodedata
 from urllib.parse import unquote
 
 import psycopg2
@@ -25,18 +26,18 @@ def index():
     using Wagtail.
     """
 
-    # Get the maximum query length from the config
-    max_query_length = current_app.config.get("MAX_QUERY_LENGTH")
+    # Get the query from the query parameters
+    query = unquote(request.args.get("q", ""))
 
-    # Get the query and remove any asterisks or leading/trailing whitespace as
-    # asterisks will break the search query
-    query = unquote(request.args.get("q", "")).replace("*", "").strip()
+    # Normalize the query to remove any special characters
+    query = (
+        unicodedata.normalize("NFKD", query)
+        .encode("ascii", "ignore")
+        .decode("ascii")
+    )
 
-    # Check if the query exceeds the maximum length
-    query_exceeds_max_length = len(query) > max_query_length
-
-    # Truncate the query to the maximum length
-    query = query[:max_query_length]
+    # Remove any asterisks or leading/trailing whitespace
+    query = query.replace("*", "").strip()
 
     # Get the requested types from the query parameters, default to "all" if not provided
     # or invalid. This is used to filter the results by type, e.g. research guides
@@ -61,9 +62,31 @@ def index():
 
     # If there is a query, we need to search the database
     if query or requested_types != "all":
-        query_parts, quoted_query_parts = get_query_parts(query)
+        all_query_parts, quoted_query_parts = get_query_parts(query)
+
+        # Get the maximum number of query parts allowed
+        max_query_parts = current_app.config.get("MAX_QUERY_PARTS")
+
+        # Check if the number of query parts exceeds the maximum allowed and
+        # trim the list if necessary, preferring quoted parts
+        num_query_parts_exceeded = False
+        if len(all_query_parts) > max_query_parts:
+            num_query_parts_exceeded = True
+            if len(quoted_query_parts) >= max_query_parts:
+                all_query_parts = list(quoted_query_parts)[:max_query_parts]
+                quoted_query_parts = set(all_query_parts)
+            else:
+                all_query_parts = (
+                    list(quoted_query_parts)
+                    + all_query_parts[
+                        : max_query_parts - len(quoted_query_parts)
+                    ]
+                )
+
+        # Construct and execute the SQL query
         sql_query = contruct_search_query(
-            query=query,
+            all_query_parts=all_query_parts,
+            quoted_query_parts=quoted_query_parts,
             requested_types=requested_types,
             page=page,
             results_per_page=results_per_page,
@@ -90,9 +113,8 @@ def index():
         return render_template(
             "sitemap_search/index.html",
             q=query,
-            query_parts=query_parts,
-            max_query_length=max_query_length,
-            query_exceeds_max_length=query_exceeds_max_length,
+            all_query_parts=all_query_parts,
+            num_query_parts_exceeded=num_query_parts_exceeded,
             page=page,
             pages=pages,
             results=results,

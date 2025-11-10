@@ -1,6 +1,7 @@
 {%- from 'components/search-field/macro.html' import tnaSearchField -%}
 
 {% macro discoverySearch(query) %}
+{# Note: Do not consider query safe and do not output it with the safe filter #}
 <form class="tna-aside tna-aside--tight tna-background-accent" method="get" action="https://discovery.nationalarchives.gov.uk/results/r" role="search">
   {#
   {{ tnaSearchField({

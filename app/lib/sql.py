@@ -22,14 +22,17 @@ def get_query_parts(query):
         set(discected_query.replace('"', "").lower().split(" "))
     )
     query_parts = [part for part in list(query_parts) if part]
-    # query_parts.sort()
 
     return query_parts, quoted_query_parts
 
 
-def contruct_search_query(query, requested_types, page=1, results_per_page=12):
-    query_parts, quoted_query_parts = get_query_parts(query)
-
+def contruct_search_query(
+    all_query_parts,
+    quoted_query_parts,
+    requested_types,
+    page=1,
+    results_per_page=12,
+):
     # Define the fields we want to query and their realtive weights
     query_fields = [
         {
@@ -54,7 +57,7 @@ def contruct_search_query(query, requested_types, page=1, results_per_page=12):
 
     # Build a list of SQL sub-queries for each query part to search the fields
     sql_sub_queries = []
-    for query_part in query_parts:
+    for query_part in all_query_parts:
         sql_sub_query_parts = []
         for field in query_fields:
             field_name = field["field"]

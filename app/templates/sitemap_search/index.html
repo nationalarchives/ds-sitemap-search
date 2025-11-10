@@ -52,8 +52,7 @@
         'hint': 'Find articles and research guides',
         'id': 'search',
         'name': 'q',
-        'value': q,
-        'maxLength': 30
+        'value': q
       }) }}
     </div>
     {#
@@ -89,12 +88,12 @@
   </form>
 </div>
 
-{% if query_exceeds_max_length %}
+{% if num_query_parts_exceeded %}
 <div class="tna-container">
   <div class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--margin-top-m">
     {{ tnaWarning({
       'headingLevel': 2,
-      'body': 'Your search query exceeded the maximum length of ' ~ max_query_length ~ ' characters and has been truncated. Use a shorter query for more accurate results.'
+      'body': 'Your search term is too complex. Some parts of your query have been ignored. Simplify your search for better results.'
     }) }}
   </div>
 </div>
@@ -105,7 +104,7 @@
   <div class="tna-container">
     <div id="results" class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--margin-top-s">
       <h2 class="tna-visually-hidden">Results</h2>
-      <p class="tna-!--no-margin-top tna-!--padding-top-s">Showing <strong>{{ ((results_per_page * (page - 1)) + 1) | commafy }}&ndash;{{ (results_per_page * page if results_per_page * page < total_results else total_results) | commafy }}</strong> of <strong>{{ total_results | commafy }}</strong> results{% if query_parts %} for {% for part in query_parts -%}
+      <p class="tna-!--no-margin-top tna-!--padding-top-s">Showing <strong>{{ ((results_per_page * (page - 1)) + 1) | commafy }}&ndash;{{ (results_per_page * page if results_per_page * page < total_results else total_results) | commafy }}</strong> of <strong>{{ total_results | commafy }}</strong> results{% if all_query_parts %} for {% for part in all_query_parts -%}
       {{ '' if loop.first else ', ' if not loop.last else ' or' }} &quot;{{ part }}&quot;
       {%- endfor -%}
       {% endif -%}</p>
@@ -116,9 +115,9 @@
             'supertitle': result.url | result_type,
             'headingLevel': 3,
             'headingSize': 's',
-            'title': result.title.replace(', Author at The National Archives blog', '').replace(' - The National Archives blog', '').replace(' - The National Archives Design System', '').replace(' - The National Archives', '') | mark(query_parts) | safe if result.title else '[No title]',
+            'title': result.title.replace(', Author at The National Archives blog', '').replace(' - The National Archives blog', '').replace(' - The National Archives Design System', '').replace(' - The National Archives', '') | mark(all_query_parts) | safe if result.title else '[No title]',
             'href': result.url | correct_url,
-            'body': ('<p>' + (result.description | mark(query_parts)) + '</p>' if result.description and result.description != '...' else '') + '<p><small>' + (result.url | correct_url | mark(query_parts)) + '</small></p>',
+            'body': ('<p>' + (result.description | mark(all_query_parts)) + '</p>' if result.description and result.description != '...' else '') + '<p><small>' + (result.url | correct_url | mark(all_query_parts)) + '</small></p>',
             'fullAreaClick': True,
             'attributes': {
               'data-id': result.id,
