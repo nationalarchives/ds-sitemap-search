@@ -3,10 +3,10 @@ services:
     build:
       context: .
       args:
-        IMAGE: ghcr.io/nationalarchives/tna-python-root
-        IMAGE_TAG: 0
+        IMAGE: ghcr.io/nationalarchives/tna-python-dev
+        # IMAGE_TAG: latest
+        IMAGE_TAG: image-refactor # TEMP: Until new images are merged
     environment:
-      - RUNTIME=develop
       - CONFIG=config.Develop
       - DEBUG=true
       - SECRET_KEY=abc123
@@ -26,6 +26,9 @@ services:
       - db
     volumes:
       - ./:/app
+    healthcheck:
+      start_period: 10s
+      start_interval: 2s
 
   db:
     image: postgres:17
@@ -37,11 +40,6 @@ services:
     restart: always
     ports:
       - 65523:8080
-
-  dev:
-    image: ghcr.io/nationalarchives/tna-python-dev:preview
-    volumes:
-      - ./:/app
 
   docs:
     image: squidfunk/mkdocs-material
