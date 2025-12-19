@@ -126,7 +126,8 @@ def index():
         # If there is no query, we just return the index page with no results
         sql_query = psycopg2.sql.SQL(
             """
-                    SELECT COUNT(*) AS total_results
+                    SELECT COUNT(*) AS total_results,
+                        MAX(date_updated) AS last_updated
                     FROM sitemap_urls
                     WHERE url NOT LIKE ANY({blacklisted_url_likes})"""
         ).format(
@@ -141,8 +142,9 @@ def index():
         cur.close()
         conn.close()
 
-        # Get the total number of results
+        # Get the total number of results and last updated date
         total_results = results[0]["total_results"] if len(results) else 0
+        last_updated = results[0]["last_updated"] if len(results) else None
 
         # Render the template with no results
         return render_template(
@@ -152,6 +154,7 @@ def index():
             pages=0,
             results=[],
             total_results=total_results,
+            last_updated=last_updated,
             results_per_page=results_per_page,
             pagination={},
         )

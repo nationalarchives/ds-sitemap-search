@@ -849,6 +849,18 @@ files = [
 Jinja2 = ">=3"
 
 [[package]]
+name = "tna-utilities"
+version = "1.1.0"
+description = "A library of common National Archives Python functions"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "tna_utilities-1.1.0-py3-none-any.whl", hash = "sha256:e1424040a27b4ab3d0273442e45798b4e71227e8c6eab5ef02af06638a6018da"},
+    {file = "tna_utilities-1.1.0.tar.gz", hash = "sha256:ae7edd11135471fdeb13f7b1a223156e0b55c121a6a553a6cc00a288438f984d"},
+]
+
+[[package]]
 name = "typing-extensions"
 version = "4.15.0"
 description = "Backported and Experimental Type Hints for Python 3.9+"
@@ -899,4 +911,4 @@ watchdog = ["watchdog (>=2.3)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "bb388c551868ba1324a5ea0228f646f34ea2c272aeed1f0994c463dfbad55bc8"
+content-hash = "e50b459c3054c93544b481932a4b2bac30b46466c4e81d3a1da23e4cdd54e9ed"

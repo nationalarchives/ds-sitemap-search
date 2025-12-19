@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {%- from 'components/breadcrumbs/macro.html' import tnaBreadcrumbs -%}
 {%- from 'components/card/macro.html' import tnaCard -%}
@@ -10,7 +10,13 @@
 
 {%- from 'sitemap_search/_discovery-search.html' import discoverySearch -%}
 
-{%- set pageTitle = 'Search results for "' + (q.replace('"', '')) + '"' if q else 'Search the site' -%}
+{%- set pageTitle -%}
+{% if q %}
+  Search results for "{{ q.replace('"', '') }}"
+{% else %}
+Search the site
+{% endif %}
+{%- endset -%}
 
 {% block skipLink %}
 {% if q %}
@@ -20,7 +26,7 @@
 }) }}
 {{ super() }}
 {% endif %}
-{% endblock %}
+{% endblock skipLink %}
 
 {% block beforeContent %}
 <div class="tna-background-accent-light">
@@ -39,7 +45,7 @@
     </div>
   </div>
 </div>
-{% endblock %}
+{% endblock beforeContent %}
 
 {% block content %}
 <div class="tna-background-accent-light tna-!--padding-top-s tna-!--padding-bottom-l">
@@ -104,7 +110,7 @@
   <div class="tna-container">
     <div id="results" class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--margin-top-s">
       <h2 class="tna-visually-hidden">Results</h2>
-      <p class="tna-!--no-margin-top tna-!--padding-top-s">Showing <strong>{{ ((results_per_page * (page - 1)) + 1) | commafy }}&ndash;{{ (results_per_page * page if results_per_page * page < total_results else total_results) | commafy }}</strong> of <strong>{{ total_results | commafy }}</strong> results{% if all_query_parts %} for {% for part in all_query_parts -%}
+      <p class="tna-!--no-margin-top tna-!--padding-top-s">Showing <strong>{{ ((results_per_page * (page - 1)) + 1) | commafy }}–{{ (results_per_page * page if results_per_page * page < total_results else total_results) | commafy }}</strong> of <strong>{{ total_results | commafy }}</strong> results{% if all_query_parts %} for {% for part in all_query_parts -%}
       {{ '' if loop.first else ', ' if not loop.last else ' or' }} &quot;{{ part }}&quot;
       {%- endfor -%}
       {% endif -%}</p>
@@ -158,7 +164,10 @@
 {% else %}
 <div class="tna-container">
   <div class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--margin-vertical-m">
-    <p><strong>{{ total_results | commafy }}</strong> pages indexed</p>
+    <p><strong>{{ total_results | commafy }}</strong> pages indexed.</p>
+    {% if last_updated %}
+      <p>Last updated <strong>{{ last_updated | pretty_age }}</strong> ({{ last_updated | pretty_date }}).</p>
+    {% endif %}
     <!-- <h2 class="tna-heading-l">Example searches</h2>
     <ul class="tna-ul">
       <li>
@@ -180,4 +189,4 @@
   </div>
 </div>
 {% endif %}
-{% endblock %}
+{% endblock content %}

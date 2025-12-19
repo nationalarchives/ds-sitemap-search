@@ -1,5 +1,16 @@
-{% extends 'base.html' %} {%- set status_code = 502 -%} {% block header %} {{
-tnaHeader({ 'logo': { 'href': '/' } }) }} {% endblock %} {% block content %}
+{% extends "base.html" %}
+
+{%- set status_code = 502 -%}
+
+{% block header %}
+{{ tnaHeader({
+  'logo': {
+    'href': '/'
+  }
+}) }}
+{% endblock header %}
+
+{% block content %}
 <div class="tna-container">
   <div
     class="tna-column tna-column--width-2-3 tna-column--full-small tna-column--full-tiny tna-section"
@@ -13,4 +24,4 @@ tnaHeader({ 'logo': { 'href': '/' } }) }} {% endblock %} {% block content %}
     </p>
   </div>
 </div>
-{% endblock %}
+{% endblock content %}
