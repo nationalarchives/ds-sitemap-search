@@ -166,7 +166,7 @@ Search the site
   <div class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--margin-vertical-m">
     <p><strong>{{ total_results | commafy }}</strong> pages indexed.</p>
     {% if last_updated %}
-      <p>Last updated <strong>{{ last_updated | pretty_age }}</strong> ({{ last_updated | pretty_date }}).</p>
+      <p>Last updated <strong>{{ last_updated | pretty_age }}</strong> ({{ last_updated | pretty_datetime }}).</p>
     {% endif %}
     <!-- <h2 class="tna-heading-l">Example searches</h2>
     <ul class="tna-ul">

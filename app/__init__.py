@@ -14,7 +14,7 @@ from app.lib.template_filters import (
 from app.lib.urls import correct_url, is_url_archived
 from flask import Flask
 from jinja2 import ChoiceLoader, PackageLoader
-from tna_utilities.datetime import pretty_date
+from tna_utilities.datetime import pretty_datetime
 
 
 def create_app(config_class):
@@ -136,7 +136,7 @@ def create_app(config_class):
     app.add_template_filter(is_url_archived)
     app.add_template_filter(mark)
     app.add_template_filter(pretty_age)
-    app.add_template_filter(pretty_date)
+    app.add_template_filter(pretty_datetime)
     app.add_template_filter(result_type)
     app.add_template_filter(slugify)
 
