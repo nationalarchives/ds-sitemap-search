@@ -24,7 +24,7 @@
     }
 
     p {
-      word-break: break-word;
+      overflow-wrap: anywhere;
 
       &:has(small) {
         line-height: 1.2;
