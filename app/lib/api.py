@@ -1,5 +1,3 @@
-import urllib.parse
-
 import requests
 from flask import current_app
 
