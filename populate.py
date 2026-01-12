@@ -170,6 +170,7 @@ class Engine(object):
             print(
                 f"{padded_enumeration(index + 1, self.num_urls)} [{bcolors.FAIL} ERROR {bcolors.ENDC}] {url} - {response.status_code}"
             )
+            # TODO: Do we need to remove the URL from the database?
         return
 
 
