@@ -33,6 +33,8 @@ services:
     image: postgres:17
     environment:
       - POSTGRES_PASSWORD=postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
   adminer:
     image: adminer
@@ -46,3 +48,6 @@ services:
       - .:/docs
     ports:
       - 65524:8000
+
+volumes:
+  pgdata:
