@@ -757,14 +757,14 @@ fixture = ["fixtures"]
 
 [[package]]
 name = "sentry-sdk"
-version = "2.49.0"
+version = "2.50.0"
 description = "Python client for Sentry (https://sentry.io)"
 optional = false
 python-versions = ">=3.6"
 groups = ["main"]
 files = [
-    {file = "sentry_sdk-2.49.0-py2.py3-none-any.whl", hash = "sha256:6ea78499133874445a20fe9c826c9e960070abeb7ae0cdf930314ab16bb97aa0"},
-    {file = "sentry_sdk-2.49.0.tar.gz", hash = "sha256:c1878599cde410d481c04ef50ee3aedd4f600e4d0d253f4763041e468b332c30"},
+    {file = "sentry_sdk-2.50.0-py2.py3-none-any.whl", hash = "sha256:0ef0ed7168657ceb5a0be081f4102d92042a125462d1d1a29277992e344e749e"},
+    {file = "sentry_sdk-2.50.0.tar.gz", hash = "sha256:873437a989ee1b8b25579847bae8384515bf18cfed231b06c591b735c1781fe3"},
 ]
 
 [package.dependencies]
@@ -823,26 +823,26 @@ unleash = ["UnleashClient (>=6.0.1)"]
 
 [[package]]
 name = "soupsieve"
-version = "2.8.1"
+version = "2.8.3"
 description = "A modern CSS selector implementation for Beautiful Soup."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "soupsieve-2.8.1-py3-none-any.whl", hash = "sha256:a11fe2a6f3d76ab3cf2de04eb339c1be5b506a8a47f2ceb6d139803177f85434"},
-    {file = "soupsieve-2.8.1.tar.gz", hash = "sha256:4cf733bc50fa805f5df4b8ef4740fc0e0fa6218cf3006269afd3f9d6d80fd350"},
+    {file = "soupsieve-2.8.3-py3-none-any.whl", hash = "sha256:ed64f2ba4eebeab06cc4962affce381647455978ffc1e36bb79a545b91f45a95"},
+    {file = "soupsieve-2.8.3.tar.gz", hash = "sha256:3267f1eeea4251fb42728b6dfb746edc9acaffc4a45b27e19450b676586e8349"},
 ]
 
 [[package]]
 name = "tna-frontend-jinja"
-version = "0.31.1"
+version = "0.32.0"
 description = "TNA Frontend Jinja templates"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "tna_frontend_jinja-0.31.1-py3-none-any.whl", hash = "sha256:0f38623557375cf5bc2e9a6eba450fdd2e48d2a4cd435306a88a204e8fee6eec"},
-    {file = "tna_frontend_jinja-0.31.1.tar.gz", hash = "sha256:bf7cfad0818a038870d633b2473f78d10c4e3b72daca25f3ec8fe302747fa706"},
+    {file = "tna_frontend_jinja-0.32.0-py3-none-any.whl", hash = "sha256:c2d79d3011e96fe43137d4c818ae5a343776f19b17e6d3f204171c4f6193c22b"},
+    {file = "tna_frontend_jinja-0.32.0.tar.gz", hash = "sha256:7f06e5052418da43184b637c1956d15751ff53e57143de764c65782f609612d8"},
 ]
 
 [package.dependencies]
@@ -911,4 +911,4 @@ watchdog = ["watchdog (>=2.3)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "2254f8b4f31fb31a98b853e4dfbfc1a24625a2e96cef6cf80d3e38c059f9c5a3"
+content-hash = "85e3ee47eda8c9cc3d7bedea6773ba08101443903d4ea516e03e9dd5f90c1449"
