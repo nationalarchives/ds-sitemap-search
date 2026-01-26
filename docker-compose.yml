@@ -17,7 +17,8 @@ services:
       - DB_NAME=postgres
       - DB_USERNAME=postgres
       - DB_PASSWORD=postgres
-      - SITEMAPS=https://localhost/sitemap.xml
+      - SITEMAPS=https://host.docker.internal/sitemap.xml
+      - DOMAIN_REMAPS={"https://localhost/":"https://host.docker.internal/"}
       - FEATURE_PHASE_BANNER=False
     ports:
       - 65525:8080
