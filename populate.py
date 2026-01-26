@@ -63,11 +63,11 @@ class Engine(object):
         }
         try:
             response = requests.get(
-                correct_url(url), headers=headers, timeout=10
+                correct_url(url), headers=headers, timeout=10, verify=False
             )
         except Exception as e:
             print(
-                f"{padded_enumeration(index + 1, self.num_urls)} [{bcolors.FAIL} ERROR {bcolors.ENDC}] {url} - {e}"
+                f"{padded_enumeration(index + 1, self.num_urls)} [{bcolors.FAIL} ERROR {bcolors.ENDC}] {correct_url(url)} - {e}"
             )
             return
 
@@ -131,6 +131,7 @@ class Engine(object):
                         f"{padded_enumeration(index + 1, self.num_urls)} [{bcolors.OKGREEN} ADDED {bcolors.ENDC}] {fixed_url}"
                     )
                     self.existing_urls.append(url)
+                    self.existing_urls.append(fixed_url)
                 else:
                     # The URL exists, update it
                     url_to_update = (
@@ -157,18 +158,18 @@ class Engine(object):
                         conn.commit()
                     except Exception as e:
                         print(
-                            f"{padded_enumeration(index + 1, self.num_urls)} [{bcolors.FAIL} ERROR {bcolors.ENDC}] {url} - {e}"
+                            f"{padded_enumeration(index + 1, self.num_urls)} [{bcolors.FAIL} ERROR {bcolors.ENDC}] {url_to_update} - {e}"
                         )
                         db_connections.putconn(conn, close=True)
                         return
 
                     print(
-                        f"{padded_enumeration(index + 1, self.num_urls)} [{bcolors.OKBLUE}UPDATED{bcolors.ENDC}] {fixed_url} ({url})"
+                        f"{padded_enumeration(index + 1, self.num_urls)} [{bcolors.OKBLUE}UPDATED{bcolors.ENDC}] {url_to_update} ({url})"
                     )
             db_connections.putconn(conn)
         else:
             print(
-                f"{padded_enumeration(index + 1, self.num_urls)} [{bcolors.FAIL} ERROR {bcolors.ENDC}] {url} - {response.status_code}"
+                f"{padded_enumeration(index + 1, self.num_urls)} [{bcolors.FAIL} ERROR {bcolors.ENDC}] {correct_url(url)} - {response.status_code}"
             )
             # TODO: Do we need to remove the URL from the database?
         return

@@ -1,4 +1,5 @@
 import sys
+import ssl
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -41,8 +42,11 @@ def parse_sitemap(sitemap_xml):
 def get_urls_from_sitemap(sitemap_url):
     print(f"Getting pages from {sitemap_url}...")
     root = None
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
     try:
-        with urllib.request.urlopen(sitemap_url) as f:
+        with urllib.request.urlopen(sitemap_url, context=ctx) as f:
             xml = f.read().decode("utf-8")
             root = ET.fromstring(xml)
             return parse_sitemap(root)
