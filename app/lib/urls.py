@@ -1,11 +1,11 @@
-from config import ARCHIVED_URLS, DOMAIN_REMAPS
 import json
 import os
 
+from config import ARCHIVED_URLS, DOMAIN_REMAPS
+
+
 def correct_url(url):
-    remaps = DOMAIN_REMAPS | (
-        json.loads(os.environ.get("DOMAIN_REMAPS", "{}"))
-    )
+    remaps = DOMAIN_REMAPS | (json.loads(os.environ.get("DOMAIN_REMAPS", "{}")))
     for domain, replacement in remaps.items():
         if url.startswith(domain):
             return url.replace(domain, replacement)

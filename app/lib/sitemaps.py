@@ -1,5 +1,5 @@
-import sys
 import ssl
+import sys
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
