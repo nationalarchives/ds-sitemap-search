@@ -63,14 +63,12 @@ def contruct_search_query(
             field_name = field["field"]
             weight = field["weight"]
             sql_sub_query_parts.append(
-                sql.SQL(
-                    """(
+                sql.SQL("""(
                             CASE WHEN {field} IS NOT NULL THEN (
                                 CHAR_LENGTH({field}) -
                                 CHAR_LENGTH(REPLACE(LOWER({field}), {query_part}, ''))
                             ) * {weight} ELSE 0 END
-                        )"""
-                ).format(
+                        )""").format(
                     field=sql.Identifier(field_name),
                     query_part=sql.Literal(query_part),
                     # Multiply the weight by a multiplier if the query part is quoted
@@ -91,12 +89,10 @@ def contruct_search_query(
     # Add a sub-query to filter by types if requested
     types_sub_query = sql.SQL("")
     if requested_types == "research-guides":
-        types_sub_query = sql.SQL(
-            """
+        types_sub_query = sql.SQL("""
             AND "url" LIKE '%/help-with-your-research/research-guides/%'
             AND "url" NOT LIKE '%/help-with-your-research/research-guides/'
-            """
-        )
+            """)
     elif requested_types == "archived-blog-posts":
         types_sub_query = sql.SQL(
             """AND "url" LIKE 'https://blog.nationalarchives.gov.uk/%'"""

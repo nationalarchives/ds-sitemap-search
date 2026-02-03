@@ -99,8 +99,7 @@ class Engine(object):
                     and fixed_url not in self.existing_urls
                 ):
                     # The URL does not exist, insert it
-                    query = sql.SQL(
-                        """INSERT INTO sitemap_urls (
+                    query = sql.SQL("""INSERT INTO sitemap_urls (
                             title,
                             url,
                             description,
@@ -110,8 +109,7 @@ class Engine(object):
                             {url},
                             {description},
                             {body}
-                        );"""
-                    ).format(
+                        );""").format(
                         title=sql.Literal(title),
                         url=sql.Literal(fixed_url),
                         description=sql.Literal(description),
@@ -138,15 +136,13 @@ class Engine(object):
                         url if url in self.existing_urls else fixed_url
                     )
 
-                    query = sql.SQL(
-                        """UPDATE sitemap_urls SET
+                    query = sql.SQL("""UPDATE sitemap_urls SET
                             url = {url},
                             title = {title},
                             description = {description},
                             body = {body},
                             date_updated = CURRENT_TIMESTAMP
-                        WHERE url = {url_to_update};"""
-                    ).format(
+                        WHERE url = {url_to_update};""").format(
                         url=sql.Literal(fixed_url),
                         title=sql.Literal(title),
                         description=sql.Literal(description),
@@ -203,8 +199,7 @@ def populate(skip_existing=False, drop_table=False):
         if drop_table:
             cur.execute("DROP TABLE IF EXISTS sitemap_urls;")
 
-        cur.execute(
-            """CREATE TABLE IF NOT EXISTS sitemap_urls (
+        cur.execute("""CREATE TABLE IF NOT EXISTS sitemap_urls (
                 id serial PRIMARY KEY,
                 title varchar (500),
                 description text,
@@ -213,8 +208,7 @@ def populate(skip_existing=False, drop_table=False):
                 date_added timestamp DEFAULT CURRENT_TIMESTAMP,
                 date_updated timestamp DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(url)
-            );"""
-        )
+            );""")
         conn.commit()
     db_connections.putconn(conn)
 
@@ -251,13 +245,11 @@ def fix_remapped_domains():
                     )
                     print(f"Deleted existing URL: {remapped_url}")
 
-            query = sql.SQL(
-                """
+            query = sql.SQL("""
                 UPDATE sitemap_urls SET
                     url = REPLACE(url, {old_domain}, {new_domain})
                 WHERE url LIKE {like_old_domain};
-            """
-            ).format(
+            """).format(
                 old_domain=sql.Literal(old_domain),
                 new_domain=sql.Literal(new_domain),
                 like_old_domain=sql.Literal(f"%{old_domain}%"),

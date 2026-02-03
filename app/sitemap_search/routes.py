@@ -124,13 +124,11 @@ def index():
         )
     else:
         # If there is no query, we just return the index page with no results
-        sql_query = psycopg2.sql.SQL(
-            """
+        sql_query = psycopg2.sql.SQL("""
                     SELECT COUNT(*) AS total_results,
                         MAX(date_updated) AS last_updated
                     FROM sitemap_urls
-                    WHERE url NOT LIKE ANY({blacklisted_url_likes})"""
-        ).format(
+                    WHERE url NOT LIKE ANY({blacklisted_url_likes})""").format(
             blacklisted_url_likes=psycopg2.sql.Literal(
                 current_app.config.get("BLACKLISTED_URLS_SQL_LIKE")
             )
