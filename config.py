@@ -78,12 +78,11 @@ class Production(Features):
     CSP_FRAME_SRC: list[str] = os.environ.get("CSP_FRAME_SRC", "'self'").split(
         ","
     )
-    CSP_FEATURE_FULLSCREEN: list[str] = os.environ.get(
-        "CSP_FEATURE_FULLSCREEN", "'self'"
-    ).split(",")
-    CSP_FEATURE_PICTURE_IN_PICTURE: list[str] = os.environ.get(
-        "CSP_FEATURE_PICTURE_IN_PICTURE", "'self'"
-    ).split(",")
+    CSP_REPORT_URL: str = os.environ.get("CSP_REPORT_URL", "")
+    if CSP_REPORT_URL:
+        CSP_REPORT_URL += (
+            f"&sentry_release={BUILD_VERSION}" if BUILD_VERSION else ""
+        )
     FORCE_HTTPS: bool = strtobool(os.getenv("FORCE_HTTPS", "False"))
 
     CACHE_TYPE: str = "FileSystemCache"
