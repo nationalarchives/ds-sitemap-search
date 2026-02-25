@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from urllib.parse import quote_plus
 
 from app.lib.urls import correct_url, is_url_archived
 
@@ -37,6 +38,9 @@ def mark(s, substrings):
             if string
         ]
     )
+    substrings = [
+        re.escape(quote_plus(string)) for string in substrings if string
+    ]
     compiled = re.compile(f"({"|".join(substrings)})", re.IGNORECASE)
     return compiled.sub(r"<mark>\g<0></mark>", s)
 
