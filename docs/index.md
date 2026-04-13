@@ -5,7 +5,7 @@
 This is the quickly-derived formula to order the results roughly from most to least relevant.
 
 $$
-score = (\frac{\sum_{t=1}^n (i\_t \cdot w\_t \cdot w\_q) + (i\_d \cdot w\_d \cdot w\_q) + (i\_b \cdot w\_b \cdot w\_q) + (i\_u \cdot w\_u \cdot w\_q)}{s + 1}) * a
+score = (\frac{\sum_{t=1}^n ((i\_t \cdot w\_t) + (i\_d \cdot w\_d) + (i\_b \cdot w\_b) + (i\_u \cdot w\_u)) \cdot w\_q}{s + 1}) * a
 $$
 
 | Symbol | Description                                                       |
@@ -20,11 +20,11 @@ $$
 
 ### Variables
 
-| Variable | Description                                           | Default value              |
-| -------- | ----------------------------------------------------- | -------------------------- |
-| $w\_t$   | The weighting of an instance found in the title       | `250`                      |
-| $w\_d$   | The weighting of an instance found in the description | `50`                       |
-| $w\_b$   | The weighting of an instance found in the body        | `5`                        |
-| $w\_u$   | The weighting of an instance found in the URL         | `1`                        |
-| $w\_q$   | Extra weighting if the search term $t$ is quoted      | `1000` if quoted else `1`  |
-| $a$      | The weighting of a URL that is considered archived    | `0.5` if archived else `1` |
+| Variable | Description                                           | Default value               |
+| -------- | ----------------------------------------------------- | --------------------------- |
+| $w\_t$   | The weighting of an instance found in the title       | `250`                       |
+| $w\_d$   | The weighting of an instance found in the description | `50`                        |
+| $w\_b$   | The weighting of an instance found in the body        | `5`                         |
+| $w\_u$   | The weighting of an instance found in the URL         | `1`                         |
+| $w\_q$   | Extra weighting if the search term $t$ is quoted      | `1000` if quoted else `1`   |
+| $a$      | The weighting of a URL that is considered archived    | `0.25` if archived else `1` |

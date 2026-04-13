@@ -61,30 +61,29 @@ def contruct_search_query(
         sql_sub_query_parts = []
         for field in query_fields:
             field_name = field["field"]
-            weight = field["weight"]
+            field_weight = field["weight"]
             sql_sub_query_parts.append(
                 sql.SQL("""(
                             CASE WHEN {field} IS NOT NULL THEN (
                                 CHAR_LENGTH({field}) -
                                 CHAR_LENGTH(REPLACE(LOWER({field}), {query_part}, ''))
-                            ) * {weight} ELSE 0 END
+                            ) * {field_weight} ELSE 0 END
                         )""").format(
                     field=sql.Identifier(field_name),
                     query_part=sql.Literal(query_part),
-                    # Multiply the weight by a multiplier if the query part is quoted
-                    weight=sql.Literal(
-                        weight
-                        * (
-                            current_app.config.get(
-                                "RELEVANCE_QUOTE_MATCH_MULTIPLIER"
-                            )
-                            if query_part in quoted_query_parts
-                            else 1
-                        )
-                    ),
+                    field_weight=sql.Literal(field_weight),
                 )
             )
-        sql_sub_queries.append(sql.SQL(" + ").join(sql_sub_query_parts))
+        sql_sub_queries.append(
+            sql.SQL("( {part_scores} * {weight} )").format(
+                part_scores=sql.SQL(" + ").join(sql_sub_query_parts),
+                weight=sql.Literal(
+                    current_app.config.get("RELEVANCE_QUOTE_MATCH_MULTIPLIER")
+                    if query_part in quoted_query_parts
+                    else 1
+                ),
+            )
+        )
 
     # Add a sub-query to filter by types if requested
     types_sub_query = sql.SQL("")

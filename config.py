@@ -127,7 +127,7 @@ class Production(Features):
         os.environ.get("RELEVANCE_BODY_MATCH_WEIGHT", "1")
     )
     RELEVANCE_ARCHIVED_WEIGHT: float = float(
-        os.environ.get("RELEVANCE_ARCHIVED_WEIGHT", "0.5")
+        os.environ.get("RELEVANCE_ARCHIVED_WEIGHT", "0.25")
     )
     RELEVANCE_QUOTE_MATCH_MULTIPLIER: float = float(
         os.environ.get("RELEVANCE_QUOTE_MATCH_MULTIPLIER", "1000")

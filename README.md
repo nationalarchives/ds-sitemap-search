@@ -84,7 +84,7 @@ In addition to the [base Docker image variables](https://github.com/nationalarch
 | `RELEVANCE_DESCRIPTION_MATCH_WEIGHT` | The score to use for every query match in the description                   | `10`                                                      |
 | `RELEVANCE_BODY_MATCH_WEIGHT`        | The score to use for every query match in the body                          | `2`                                                       |
 | `RELEVANCE_URL_MATCH_WEIGHT`         | The score to use for every query match in the page URL                      | `1`                                                       |
-| `RELEVANCE_ARCHIVED_WEIGHT`          | The multiplier to use for a result with a URL in `ARCHIVED_URLS`            | `0.5`                                                     |
+| `RELEVANCE_ARCHIVED_WEIGHT`          | The multiplier to use for a result with a URL in `ARCHIVED_URLS`            | `0.25`                                                    |
 | `RELEVANCE_QUOTE_MATCH_MULTIPLIER`   | The multiplier to use for a result that matches a quoted string             | `250`                                                     |
 | `DOMAIN_REMAPS`                      | A JSON dict of remapped URLs (e.g. for fixing `http://website.live.local/`) | _See `DOMAIN_REMAPS` in `config.py`_                      |
 | `ARCHIVED_URLS`                      | A CSV list of archived URLs                                                 | _See `ARCHIVED_URLS` in `config.py`_                      |
