@@ -11,14 +11,14 @@ jobs:
   test-node:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Run tests
         uses: ./.github/actions/node-tests
 
   test-python:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Run tests
         uses: ./.github/actions/python-tests
 
@@ -27,7 +27,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Run tests
         uses: ./.github/actions/check-formatting
 
@@ -41,7 +41,7 @@ jobs:
       packages: write
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Generate version tag
         id: version-tag
         uses: nationalarchives/ds-docker-actions/.github/actions/get-version-tag@main
@@ -76,7 +76,7 @@ jobs:
       - build
     if: github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           repository: nationalarchives/ds-infrastructure-web
           ref: main
@@ -102,7 +102,7 @@ jobs:
   #     - build
   #   if: github.ref == 'refs/heads/main'
   #   steps:
-  #     - uses: actions/checkout@v4
+  #     - uses: actions/checkout@v6
   #       with:
   #         repository: nationalarchives/ds-etna
   #         ref: proof-of-concept

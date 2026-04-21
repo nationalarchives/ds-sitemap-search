@@ -1,4 +1,5 @@
 import logging
+import os
 
 import sentry_sdk
 from app.lib.cache import cache
@@ -37,7 +38,9 @@ def create_app(config_class):
 
     gunicorn_error_logger = logging.getLogger("gunicorn.error")
     app.logger.handlers.extend(gunicorn_error_logger.handlers)
-    app.logger.setLevel(gunicorn_error_logger.level or "DEBUG")
+    app.logger.setLevel(
+        gunicorn_error_logger.level or os.getenv("LOG_LEVEL", "warning").upper()
+    )
 
     cache.init_app(
         app,
@@ -49,41 +52,16 @@ def create_app(config_class):
         },
     )
 
-    csp_self = "'self'"
-    csp_none = "'none'"
-    default_csp = csp_self
-    csp_rules = {
-        key.replace("_", "-"): value
-        for key, value in app.config.get_namespace(
-            "CSP_", lowercase=True, trim_namespace=True
-        ).items()
-        if not key.startswith("feature_") and value not in [None, [default_csp]]
-    }
     talisman.init_app(
         app,
-        content_security_policy={
-            "default-src": default_csp,
-            "base-uri": csp_none,
-            "object-src": csp_none,
-        }
-        | csp_rules,
-        content_security_policy_report_uri=app.config.get(
-            "CSP_REPORT_URL", None
-        ),
+        content_security_policy=app.config["CONTENT_SECURITY_POLICY"],
+        allow_google_content_security_policy=True,
         force_https=app.config["FORCE_HTTPS"],
     )
 
-    @app.after_request
-    def apply_extra_headers(response):
-        response.headers["X-Permitted-Cross-Domain-Policies"] = "none"
-        response.headers["Cross-Origin-Embedder-Policy"] = "unsafe-none"
-        response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
-        response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
-        return response
-
     app.jinja_env.trim_blocks = True
     app.jinja_env.lstrip_blocks = True
-    app.jinja_loader = ChoiceLoader(
+    app.jinja_env.loader = ChoiceLoader(
         [
             PackageLoader("app"),
             PackageLoader("tna_frontend_jinja"),
@@ -121,8 +99,8 @@ def create_app(config_class):
     from .main import bp as site_bp
     from .sitemap_search import bp as sitemap_search_bp
 
-    app.register_blueprint(site_bp)
     app.register_blueprint(healthcheck_bp, url_prefix="/healthcheck")
+    app.register_blueprint(site_bp)
     app.register_blueprint(sitemap_search_bp, url_prefix="/search")
 
     return app
