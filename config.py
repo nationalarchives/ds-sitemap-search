@@ -48,7 +48,9 @@ class Production(Features):
     SENTRY_DSN: str = os.getenv("SENTRY_DSN", "")
     SENTRY_SAMPLE_RATE: float = float(os.getenv("SENTRY_SAMPLE_RATE", "0.1"))
 
-    COOKIE_DOMAIN: str = os.environ.get("COOKIE_DOMAIN", "")
+    COOKIE_DOMAIN: str = os.environ.get("COOKIE_DOMAIN", ".nationalarchives.gov.uk")
+    COOKIE_PREFERENCES_URL: str = os.environ.get("COOKIE_PREFERENCES_URL", "/cookies/")
+    COOKIE_PREFERENCES_KEY: str = os.environ.get("COOKIE_PREFERENCES_KEY", "dontShowCookieNotice")
 
     CSP_IMG_SRC: list[str] = os.environ.get("CSP_IMG_SRC", "'self'").split(",")
     CSP_SCRIPT_SRC: list[str] = os.environ.get(
