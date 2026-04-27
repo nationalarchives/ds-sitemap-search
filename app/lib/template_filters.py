@@ -3,14 +3,11 @@ from datetime import datetime
 from urllib.parse import quote_plus
 
 from app.lib.urls import correct_url, is_url_archived
+from tna_utilities.string import slugify as slugify_util
 
 
 def slugify(s):
-    s = s.lower().strip()
-    s = re.sub(r"[^\w\s-]", "", s)
-    s = re.sub(r"[\s_-]+", "-", s)
-    s = re.sub(r"^-+|-+$", "", s)
-    return s
+    return slugify_util(s)
 
 
 def commafy(s):
