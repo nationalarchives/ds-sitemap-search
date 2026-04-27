@@ -7,7 +7,7 @@
 {%- set theme = request.cookies.get('theme') or 'system' -%}
 {# TODO: Remove once more pages can support dark mode #}
 {%- set theme = 'light' -%}
-{%- set themeAccent = themeAccent if themeAccent else 'blue' -%}
+{%- set themeAccent = themeAccent if themeAccent else 'green' -%}
 {%- set htmlAttributes = {
   'data-ga4id': app_config.GA4_ID or '',
   'data-tna-cookies-domain': app_config.COOKIE_DOMAIN or ''
@@ -51,13 +51,11 @@
 {% endblock stylesheets %}
 
 {% block cookies %}
-{% if 'cookie_preferences_set' not in request.cookies or not request.cookies.get('cookie_preferences_set') %}
 {{ tnaCookieBanner({
   'serviceName': 'The National Archives',
-  'cookiesUrl': 'https://www.nationalarchives.gov.uk/cookies/',
-  'preferencesSetKey': 'dontShowCookieNotice'
+  'cookiesUrl': app_config.COOKIE_PREFERENCES_URL,
+  'preferencesSetKey': app_config.COOKIE_PREFERENCES_KEY
 }) | indent(6) }}
-{% endif %}
 {% endblock cookies %}
 
 {% block header %}

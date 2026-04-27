@@ -12,12 +12,11 @@ flask = "^2.3.2"
 requests = "^2.31.0"
 flask-caching = "^2.1.0"
 tna-frontend-jinja = "0.38.0"
-flask-talisman = "^1.1.0"
 beautifulsoup4 = "^4.12.3"
 lxml = "^6.0.2"
 psycopg2-binary = "^2.9.10"
 sentry-sdk = {extras = ["flask"], version = "^2.20.0"}
-tna-utilities = "^1.1.0"
+tna-utilities = {extras = ["flask"], version = "^1.4.0"}
 
 [tool.poetry.group.dev]
 optional = true
