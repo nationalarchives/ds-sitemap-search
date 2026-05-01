@@ -12,7 +12,7 @@
 
 {%- set pageTitle -%}
 {% if q %}
-  Search results for "{{ q.replace('"', '') }}"
+  Search results for "{{ q | remove_quotes }}"
 {% else %}
 Search the site
 {% endif %}
