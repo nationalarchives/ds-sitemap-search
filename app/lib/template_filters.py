@@ -14,6 +14,10 @@ def commafy(s):
     return "{:,}".format(s)
 
 
+def remove_quotes(s):
+    return s.replace('"', "").replace("'", "")
+
+
 def result_type(url):
     url = correct_url(url)
     if is_url_archived(url):

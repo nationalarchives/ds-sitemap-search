@@ -9,6 +9,7 @@ from app.lib.template_filters import (
     commafy,
     mark,
     pretty_age,
+    remove_quotes,
     result_type,
     slugify,
 )
@@ -74,6 +75,7 @@ def create_app(config_class):
     app.add_template_filter(mark)
     app.add_template_filter(pretty_age)
     app.add_template_filter(pretty_datetime)
+    app.add_template_filter(remove_quotes)
     app.add_template_filter(result_type)
     app.add_template_filter(slugify)
 
