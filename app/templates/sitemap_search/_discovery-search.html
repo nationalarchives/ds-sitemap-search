@@ -1,20 +1,7 @@
-{%- from 'components/search-field/macro.html' import tnaSearchField -%}
 
 {% macro discoverySearch(query) %}
 {# Note: Do not consider query safe and do not output it with the safe filter #}
-<form class="tna-aside tna-aside--tight tna-background-accent" method="get" action="https://discovery.nationalarchives.gov.uk/results/r" role="search">
-  {#
-  {{ tnaSearchField({
-    'label': 'Looking for particular records? Search our catalogue',
-    'headingLevel': 2,
-    'headingSize': 'm',
-    'hint': 'Our catalogue, Discovery, holds more than 37 million descriptions of records held by The National Archives and archives across the country.',
-    'id': 'search-discovery',
-    'name': '_q',
-    'value': query,
-    'formItemClasses': 'discovery-search'
-  }) }}
-  #}
+<div class="tna-aside tna-aside--tight tna-background-accent">
   <h2 class="tna-heading-m">Looking for particular records? Search our catalogue</h2>
   <p>Our catalogue, Discovery, holds more than 37 million descriptions of records held by The National Archives and archives across the country.</p>
   {% if query %}
@@ -41,5 +28,5 @@
     {# djlint:on #}
   </p>
   {% endif %}
-</form>
+</div>
 {% endmacro %}
