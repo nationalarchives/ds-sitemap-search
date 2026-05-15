@@ -13,26 +13,16 @@ def parse_sitemap(sitemap_xml):
         for url in sitemap_xml:
             if url.tag == "{http://www.sitemaps.org/schemas/sitemap/0.9}url":
                 for loc in url:
-                    if (
-                        loc.tag
-                        == "{http://www.sitemaps.org/schemas/sitemap/0.9}loc"
-                    ):
+                    if loc.tag == "{http://www.sitemaps.org/schemas/sitemap/0.9}loc":
                         url = loc.text
                         urls.add(url)
     elif sitemap_xml is not None and (
-        sitemap_xml.tag
-        == "{http://www.sitemaps.org/schemas/sitemap/0.9}sitemapindex"
+        sitemap_xml.tag == "{http://www.sitemaps.org/schemas/sitemap/0.9}sitemapindex"
     ):
         for sitemap in sitemap_xml:
-            if (
-                sitemap.tag
-                == "{http://www.sitemaps.org/schemas/sitemap/0.9}sitemap"
-            ):
+            if sitemap.tag == "{http://www.sitemaps.org/schemas/sitemap/0.9}sitemap":
                 for loc in sitemap:
-                    if (
-                        loc.tag
-                        == "{http://www.sitemaps.org/schemas/sitemap/0.9}loc"
-                    ):
+                    if loc.tag == "{http://www.sitemaps.org/schemas/sitemap/0.9}loc":
                         url = loc.text
                         if " " not in url:
                             urls.update(get_urls_from_sitemap(url))

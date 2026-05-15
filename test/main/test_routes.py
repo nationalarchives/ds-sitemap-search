@@ -12,6 +12,4 @@ class MainBlueprintTestCase(unittest.TestCase):
     def test_homepage(self):
         rv = self.client.get("/")
         self.assertEqual(rv.status_code, 200)
-        self.assertIn(
-            '<h1 class="tna-heading-xl">TNA Flask application</h1>', rv.text
-        )
+        self.assertIn('<h1 class="tna-heading-xl">TNA Flask application</h1>', rv.text)
