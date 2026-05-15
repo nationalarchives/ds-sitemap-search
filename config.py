@@ -14,9 +14,7 @@ ARCHIVED_URLS = [
 
 
 class Features:
-    FEATURE_PHASE_BANNER: bool = strtobool(
-        os.getenv("FEATURE_PHASE_BANNER", "True")
-    )
+    FEATURE_PHASE_BANNER: bool = strtobool(os.getenv("FEATURE_PHASE_BANNER", "True"))
 
 
 class Production(Features):
@@ -48,21 +46,15 @@ class Production(Features):
     SENTRY_DSN: str = os.getenv("SENTRY_DSN", "")
     SENTRY_SAMPLE_RATE: float = float(os.getenv("SENTRY_SAMPLE_RATE", "0.1"))
 
-    COOKIE_DOMAIN: str = os.environ.get(
-        "COOKIE_DOMAIN", ".nationalarchives.gov.uk"
-    )
-    COOKIE_PREFERENCES_URL: str = os.environ.get(
-        "COOKIE_PREFERENCES_URL", "/cookies/"
-    )
+    COOKIE_DOMAIN: str = os.environ.get("COOKIE_DOMAIN", ".nationalarchives.gov.uk")
+    COOKIE_PREFERENCES_URL: str = os.environ.get("COOKIE_PREFERENCES_URL", "/cookies/")
     COOKIE_PREFERENCES_KEY: str = os.environ.get(
         "COOKIE_PREFERENCES_KEY", "dontShowCookieNotice"
     )
 
     CSP_REPORT_URI: str = os.environ.get("CSP_REPORT_URI", "")
     if CSP_REPORT_URI and BUILD_VERSION:
-        CSP_REPORT_URI += (
-            f"&sentry_release={BUILD_VERSION}" if BUILD_VERSION else ""
-        )
+        CSP_REPORT_URI += f"&sentry_release={BUILD_VERSION}" if BUILD_VERSION else ""
     CONTENT_SECURITY_POLICY: dict = {
         "connect-src": os.environ.get("CSP_CONNECT_SRC", "").split(","),
         "font-src": os.environ.get("CSP_FONT_SRC", "").split(","),
@@ -78,9 +70,7 @@ class Production(Features):
     FORCE_HTTPS: bool = strtobool(os.getenv("FORCE_HTTPS", "False"))
 
     CACHE_TYPE: str = "FileSystemCache"
-    CACHE_DEFAULT_TIMEOUT: int = int(
-        os.environ.get("CACHE_DEFAULT_TIMEOUT", "300")
-    )
+    CACHE_DEFAULT_TIMEOUT: int = int(os.environ.get("CACHE_DEFAULT_TIMEOUT", "300"))
     CACHE_IGNORE_ERRORS: bool = True
     CACHE_DIR: str = os.environ.get("CACHE_DIR", "/tmp")
 
@@ -95,9 +85,7 @@ class Production(Features):
             ARCHIVED_URLS
             + [
                 archived_url
-                for archived_url in os.environ.get("ARCHIVED_URLS", "").split(
-                    ","
-                )
+                for archived_url in os.environ.get("ARCHIVED_URLS", "").split(",")
                 if archived_url
             ]
         )

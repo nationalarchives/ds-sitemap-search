@@ -19,9 +19,7 @@ def is_url_archived(url):
             ARCHIVED_URLS
             + [
                 archived_url
-                for archived_url in os.environ.get("ARCHIVED_URLS", "").split(
-                    ","
-                )
+                for archived_url in os.environ.get("ARCHIVED_URLS", "").split(",")
                 if archived_url
             ]
         )

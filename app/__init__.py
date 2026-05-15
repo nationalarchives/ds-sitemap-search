@@ -2,6 +2,10 @@ import logging
 import os
 
 import sentry_sdk
+from flask import Flask
+from jinja2 import ChoiceLoader, PackageLoader
+from tna_utilities.datetime import pretty_datetime
+
 from app.lib.cache import cache
 from app.lib.context_processor import cookie_preference, now_iso_8601
 from app.lib.talisman import talisman
@@ -14,9 +18,6 @@ from app.lib.template_filters import (
     slugify,
 )
 from app.lib.urls import correct_url, is_url_archived
-from flask import Flask
-from jinja2 import ChoiceLoader, PackageLoader
-from tna_utilities.datetime import pretty_datetime
 
 
 def create_app(config_class):
@@ -90,12 +91,8 @@ def create_app(config_class):
                 "BUILD_VERSION": app.config.get("BUILD_VERSION"),
                 "TNA_FRONTEND_VERSION": app.config.get("TNA_FRONTEND_VERSION"),
                 "COOKIE_DOMAIN": app.config.get("COOKIE_DOMAIN"),
-                "COOKIE_PREFERENCES_URL": app.config.get(
-                    "COOKIE_PREFERENCES_URL"
-                ),
-                "COOKIE_PREFERENCES_KEY": app.config.get(
-                    "COOKIE_PREFERENCES_KEY"
-                ),
+                "COOKIE_PREFERENCES_URL": app.config.get("COOKIE_PREFERENCES_URL"),
+                "COOKIE_PREFERENCES_KEY": app.config.get("COOKIE_PREFERENCES_KEY"),
                 "GA4_ID": app.config.get("GA4_ID"),
             },
             feature={

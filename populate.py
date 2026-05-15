@@ -6,12 +6,13 @@ from multiprocessing import Pool
 import psycopg2
 import psycopg2.extras
 import requests
-from app.lib.sitemaps import get_urls_from_sitemap
-from app.lib.urls import correct_url
 from bs4 import BeautifulSoup
-from config import DOMAIN_REMAPS
 from psycopg2 import sql
 from psycopg2.pool import SimpleConnectionPool
+
+from app.lib.sitemaps import get_urls_from_sitemap
+from app.lib.urls import correct_url
+from config import DOMAIN_REMAPS
 
 
 class bcolors:
@@ -27,7 +28,7 @@ class bcolors:
 
 
 def padded_enumeration(number, total):
-    return f"[{str(number).rjust(len(str(total)), " ")}/{total}]"
+    return f"[{str(number).rjust(len(str(total)), ' ')}/{total}]"
 
 
 db_connections = SimpleConnectionPool(
@@ -73,9 +74,7 @@ class Engine(object):
 
         if response.ok:
             conn = db_connections.getconn()
-            with conn.cursor(
-                cursor_factory=psycopg2.extras.RealDictCursor
-            ) as cur:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
                 soup = BeautifulSoup(response.text, "html.parser")
                 title = soup.title
                 title = title.text if title else None
@@ -88,9 +87,7 @@ class Engine(object):
                     else None
                 )
                 body = soup.find("main") or soup.find(role="main") or soup.body
-                body = (
-                    re.sub(r"\n+\s*", "\n", body.text).strip() if body else ""
-                )
+                body = re.sub(r"\n+\s*", "\n", body.text).strip() if body else ""
 
                 fixed_url = correct_url(url)
 
@@ -132,9 +129,7 @@ class Engine(object):
                     self.existing_urls.append(fixed_url)
                 else:
                     # The URL exists, update it
-                    url_to_update = (
-                        url if url in self.existing_urls else fixed_url
-                    )
+                    url_to_update = url if url in self.existing_urls else fixed_url
 
                     query = sql.SQL("""UPDATE sitemap_urls SET
                             url = {url},
@@ -183,9 +178,7 @@ def process_sitemap(sitemap, skip_existing=False):
     engine = Engine(len(urls), existing_urls, skip_existing)
     with Pool(1) as pool:
         try:
-            pool.map(
-                engine, [(index, url) for index, url in enumerate(urls)], 1
-            )
+            pool.map(engine, [(index, url) for index, url in enumerate(urls)], 1)
         except Exception as e:
             print(f"Error processing sitemap {sitemap}: {e}")
         pool.close()
@@ -239,9 +232,9 @@ def fix_remapped_domains():
                 # If the remapped domain is already in the database, delete it
                 if remapped_url in [e["url"] for e in all_entries]:
                     cur.execute(
-                        sql.SQL(
-                            "DELETE FROM sitemap_urls WHERE id = {id};"
-                        ).format(id=sql.Literal(id))
+                        sql.SQL("DELETE FROM sitemap_urls WHERE id = {id};").format(
+                            id=sql.Literal(id)
+                        )
                     )
                     print(f"Deleted existing URL: {remapped_url}")
 
