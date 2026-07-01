@@ -11,9 +11,9 @@
     "@nationalarchives/frontend": "0.40.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.22.11",
-    "@babel/preset-env": "^7.22.10",
-    "babel-loader": "^9.1.3",
+    "@babel/core": "^8.0.1",
+    "@babel/preset-env": "^8.0.2",
+    "babel-loader": "^10.1.1",
     "sass": "^1.69.4",
     "terser-webpack-plugin": "^5.3.10",
     "webpack": "^5.88.2",
