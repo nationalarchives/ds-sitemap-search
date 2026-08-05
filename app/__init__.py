@@ -92,7 +92,6 @@ def create_app(config_class):
                 "TNA_FRONTEND_VERSION": app.config.get("TNA_FRONTEND_VERSION"),
                 "COOKIE_DOMAIN": app.config.get("COOKIE_DOMAIN"),
                 "COOKIE_PREFERENCES_URL": app.config.get("COOKIE_PREFERENCES_URL"),
-                "COOKIE_PREFERENCES_KEY": app.config.get("COOKIE_PREFERENCES_KEY"),
                 "GA4_ID": app.config.get("GA4_ID"),
             },
             feature={

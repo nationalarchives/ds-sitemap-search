@@ -14,7 +14,7 @@ if (ga4Id) {
       targetElement: ".tna-card__heading-link",
       data: {
         state: ($el) =>
-          parseInt($el.closest(".tna-card")?.dataset.resultPosition || "0"),
+          parseInt($el.closest(".tna-card")?.dataset.resultPosition || "0", 10),
         value: helpers.valueGetters.text,
       },
     },
