@@ -65,7 +65,7 @@ In addition to the [base Docker image variables](https://github.com/nationalarch
 | `SENTRY_SAMPLE_RATE`                 | How often to sample traces and profiles (0-1.0)                             | production: `0.1`, staging: `1`, develop: `0`, test: `0`  |
 | `COOKIE_DOMAIN`                      | The domain to save cookie preferences against                               | `.nationalarchives.gov.uk`                                |
 | `COOKIE_PREFERENCES_URL`             | The URL for changing cookie preferences                                     | `/cookies/`                                               |
-| `COOKIE_PREFERENCES_KEY`             | The URL for changing cookie preferences                                     | `dontShowCookieNotice`                                    |
+| `COOKIE_PREFERENCES_KEY`             | The URL for changing cookie preferences                                     | `cookie_preferences_set`                                    |
 | `CSP_IMG_SRC`                        | A comma separated list of CSP rules for `img-src`                           | `'self'`                                                  |
 | `CSP_SCRIPT_SRC`                     | A comma separated list of CSP rules for `script-src`                        | `'self'`                                                  |
 | `CSP_STYLE_SRC`                      | A comma separated list of CSP rules for `style-src`                         | `'self'`                                                  |
