@@ -5,12 +5,13 @@ from urllib.parse import unquote
 
 import psycopg2
 import psycopg2.extras
+from flask import current_app, render_template, request
+
 from app.lib.cache import cache
 from app.lib.cache_key_prefix import cache_key_prefix
 from app.lib.pagination import pagination_object
 from app.lib.sql import contruct_search_query, get_query_parts
 from app.sitemap_search import bp
-from flask import current_app, render_template, request
 
 
 @bp.route("/")
@@ -31,9 +32,7 @@ def index():
 
     # Normalize the query to remove any special characters
     query = (
-        unicodedata.normalize("NFKD", query)
-        .encode("ascii", "ignore")
-        .decode("ascii")
+        unicodedata.normalize("NFKD", query).encode("ascii", "ignore").decode("ascii")
     )
 
     # Remove any asterisks or leading/trailing whitespace
@@ -78,9 +77,7 @@ def index():
             else:
                 all_query_parts = (
                     list(quoted_query_parts)
-                    + all_query_parts[
-                        : max_query_parts - len(quoted_query_parts)
-                    ]
+                    + all_query_parts[: max_query_parts - len(quoted_query_parts)]
                 )
 
         # Construct and execute the SQL query

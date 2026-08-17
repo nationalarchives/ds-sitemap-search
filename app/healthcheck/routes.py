@@ -1,5 +1,6 @@
-from app.healthcheck import bp
 from flask import current_app
+
+from app.healthcheck import bp
 
 
 @bp.route("/live/")

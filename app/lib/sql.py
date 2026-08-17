@@ -13,9 +13,7 @@ def get_query_parts(query):
     discected_query = query
     while quoted_strings := re.search(r"(\"(.*?)\")", discected_query):
         quoted_query_parts.add(quoted_strings.group(2).lower().strip())
-        discected_query = discected_query.replace(
-            quoted_strings.group(0), ""
-        ).strip()
+        discected_query = discected_query.replace(quoted_strings.group(0), "").strip()
 
     # Create a set of query parts with quoted and unquoted parts
     query_parts = quoted_query_parts.union(
@@ -41,9 +39,7 @@ def contruct_search_query(
         },
         {
             "field": "description",
-            "weight": current_app.config.get(
-                "RELEVANCE_DESCRIPTION_MATCH_WEIGHT"
-            ),
+            "weight": current_app.config.get("RELEVANCE_DESCRIPTION_MATCH_WEIGHT"),
         },
         {
             "field": "body",
@@ -159,9 +155,7 @@ def contruct_search_query(
         OFFSET {offset};""",
     ).format(
         search_sub_query=(
-            sql.SQL(" + ").join(sql_sub_queries)
-            if sql_sub_queries
-            else sql.SQL("1")
+            sql.SQL(" + ").join(sql_sub_queries) if sql_sub_queries else sql.SQL("1")
         ),
         archived_weight=sql.Literal(
             current_app.config.get("RELEVANCE_ARCHIVED_WEIGHT")
