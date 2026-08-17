@@ -81,14 +81,14 @@ def index():
                 )
 
         # Construct and execute the SQL query
-        sql_query = contruct_search_query(
+        sql_query, params = contruct_search_query(
             all_query_parts=all_query_parts,
             quoted_query_parts=quoted_query_parts,
             requested_types=requested_types,
             page=page,
             results_per_page=results_per_page,
         )
-        cur.execute(sql_query)
+        cur.execute(sql_query, params)
 
         # Get all the results
         results = cur.fetchall()
