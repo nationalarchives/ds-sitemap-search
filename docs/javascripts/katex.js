@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 document$.subscribe(({ body }) => {
   renderMathInElement(body, {
     delimiters: [

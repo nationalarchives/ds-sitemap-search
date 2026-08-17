@@ -12,8 +12,8 @@ def now_iso_8601():
 
 
 def cookie_preference(policy):
-    if "cookies_policy" in request.cookies:
-        cookies_policy = request.cookies["cookies_policy"]
-        preferences = json.loads(unquote(cookies_policy))
+    if "cookie_preferences" in request.cookies:
+        cookie_preferences = request.cookies["cookie_preferences"]
+        preferences = json.loads(unquote(cookie_preferences))
         return preferences[policy] if policy in preferences else None
     return None
