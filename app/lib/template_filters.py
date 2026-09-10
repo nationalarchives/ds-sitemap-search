@@ -1,5 +1,5 @@
 import re
-from datetime import datetime
+from datetime import UTC, datetime
 from urllib.parse import quote_plus
 
 from tna_utilities.string import slugify as slugify_util
@@ -12,7 +12,7 @@ def slugify(s):
 
 
 def commafy(s):
-    return "{:,}".format(s)
+    return f"{s:,}"
 
 
 def remove_quotes(s):
@@ -49,7 +49,7 @@ def pretty_age(date):
     if not date:
         raise ValueError("Date must be provided")
 
-    now = datetime.now()
+    now = datetime.now(UTC)
     delta = now - date
     days = delta.days
     seconds = delta.seconds
