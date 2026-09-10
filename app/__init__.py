@@ -4,7 +4,7 @@ import os
 import sentry_sdk
 from flask import Flask
 from jinja2 import ChoiceLoader, PackageLoader
-from tna_utilities.datetime import pretty_datetime
+from tna_utilities.datetime import pretty_age, pretty_datetime
 
 from app.lib.cache import cache
 from app.lib.context_processor import cookie_preference, now_iso_8601
@@ -12,10 +12,8 @@ from app.lib.talisman import talisman
 from app.lib.template_filters import (
     commafy,
     mark,
-    pretty_age,
     remove_quotes,
     result_type,
-    slugify,
 )
 from app.lib.urls import correct_url, is_url_archived
 
@@ -78,7 +76,6 @@ def create_app(config_class):
     app.add_template_filter(pretty_datetime)
     app.add_template_filter(remove_quotes)
     app.add_template_filter(result_type)
-    app.add_template_filter(slugify)
 
     @app.context_processor
     def context_processor():
