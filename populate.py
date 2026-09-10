@@ -42,7 +42,7 @@ db_connections = SimpleConnectionPool(
 )
 
 
-class Engine(object):
+class Engine:
     def __init__(self, num_urls, existing_urls, skip_existing=False):
         self.num_urls = num_urls
         self.existing_urls = existing_urls
@@ -66,7 +66,7 @@ class Engine(object):
             response = requests.get(
                 correct_url(url), headers=headers, timeout=10, verify=False
             )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             print(
                 f"{padded_enumeration(index + 1, self.num_urls)} [{bcolors.FAIL} ERROR {bcolors.ENDC}] {correct_url(url)} - {e}"
             )
@@ -115,7 +115,7 @@ class Engine(object):
                     try:
                         cur.execute(query)
                         conn.commit()
-                    except Exception as e:
+                    except Exception as e:  # noqa: BLE001
                         print(
                             f"{padded_enumeration(index + 1, self.num_urls)} [{bcolors.FAIL} ERROR {bcolors.ENDC}] {fixed_url} - {e}"
                         )
@@ -147,7 +147,7 @@ class Engine(object):
                     try:
                         cur.execute(query)
                         conn.commit()
-                    except Exception as e:
+                    except Exception as e:  # noqa: BLE001
                         print(
                             f"{padded_enumeration(index + 1, self.num_urls)} [{bcolors.FAIL} ERROR {bcolors.ENDC}] {url_to_update} - {e}"
                         )
@@ -179,7 +179,7 @@ def process_sitemap(sitemap, skip_existing=False):
     with Pool(1) as pool:
         try:
             pool.map(engine, [(index, url) for index, url in enumerate(urls)], 1)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             print(f"Error processing sitemap {sitemap}: {e}")
         pool.close()
         pool.join()
@@ -261,4 +261,4 @@ if __name__ == "__main__":
     else:
         populate()
     db_connections.closeall()
-    exit(0)
+    sys.exit(0)

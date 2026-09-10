@@ -9,4 +9,4 @@ if __name__ == "__main__":
     else:
         populate(skip_existing=True)
     db_connections.closeall()
-    exit(0)
+    sys.exit(0)

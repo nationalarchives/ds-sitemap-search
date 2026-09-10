@@ -35,13 +35,7 @@ def pagination_list(current_page, total_pages, boundaries=1, around=1):
         end_middle_chunk
         if end_middle_chunk == (total_pages - 1)
         and current_page + (around + 1) == (total_pages - 1)
-        else (
-            "..."
-            if end_middle_chunk < start_final_chunk
-            else ""
-            if boundaries + 1 <= end_middle_chunk
-            else ""
-        )
+        else ("..." if end_middle_chunk < start_final_chunk else "")
     )
 
     pagination_items = (

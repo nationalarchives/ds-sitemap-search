@@ -1,7 +1,8 @@
 import json
 import os
+from typing import ClassVar
 
-from app.lib.util import strtobool
+from tna_utilities import strtobool
 
 DOMAIN_REMAPS = {
     "http://website.live.local/": "https://www.nationalarchives.gov.uk/",
@@ -52,7 +53,7 @@ class Production(Features):
     CSP_REPORT_URI: str = os.environ.get("CSP_REPORT_URI", "")
     if CSP_REPORT_URI and BUILD_VERSION:
         CSP_REPORT_URI += f"&sentry_release={BUILD_VERSION}" if BUILD_VERSION else ""
-    CONTENT_SECURITY_POLICY: dict = {
+    CONTENT_SECURITY_POLICY: ClassVar[dict] = {
         "connect-src": os.environ.get("CSP_CONNECT_SRC", "").split(","),
         "font-src": os.environ.get("CSP_FONT_SRC", "").split(","),
         "frame-src": os.environ.get("CSP_FRAME_SRC", "").split(","),
@@ -76,7 +77,7 @@ class Production(Features):
     DOMAIN_REMAPS: dict = DOMAIN_REMAPS | (
         json.loads(os.environ.get("DOMAIN_REMAPS", "{}"))
     )
-    ARCHIVED_URLS: list[str] = [
+    ARCHIVED_URLS: ClassVar[list[str]] = [
         domain
         for domain in (
             ARCHIVED_URLS

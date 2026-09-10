@@ -82,10 +82,10 @@ def create_app(config_class):
 
     @app.context_processor
     def context_processor():
-        return dict(
-            cookie_preference=cookie_preference,
-            now_iso_8601=now_iso_8601,
-            app_config={
+        return {
+            "cookie_preference": cookie_preference,
+            "now_iso_8601": now_iso_8601,
+            "app_config": {
                 "ENVIRONMENT": app.config.get("ENVIRONMENT"),
                 "CONTAINER_IMAGE": app.config.get("CONTAINER_IMAGE"),
                 "BUILD_VERSION": app.config.get("BUILD_VERSION"),
@@ -94,10 +94,10 @@ def create_app(config_class):
                 "COOKIE_PREFERENCES_URL": app.config.get("COOKIE_PREFERENCES_URL"),
                 "GA4_ID": app.config.get("GA4_ID"),
             },
-            feature={
+            "feature": {
                 "PHASE_BANNER": app.config.get("FEATURE_PHASE_BANNER"),
             },
-        )
+        }
 
     from .healthcheck import bp as healthcheck_bp
     from .main import bp as site_bp
