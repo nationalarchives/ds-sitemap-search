@@ -75,13 +75,13 @@ def create_app(config_class):
     app.add_template_filter(pretty_age)
     app.add_template_filter(pretty_datetime)
     app.add_template_filter(remove_quotes)
-    app.add_template_filter(result_type)
 
     @app.context_processor
     def context_processor():
         return {
             "cookie_preference": cookie_preference,
             "now_iso_8601": now_iso_8601,
+            "result_type": result_type,
             "app_config": {
                 "ENVIRONMENT": app.config.get("ENVIRONMENT"),
                 "CONTAINER_IMAGE": app.config.get("CONTAINER_IMAGE"),

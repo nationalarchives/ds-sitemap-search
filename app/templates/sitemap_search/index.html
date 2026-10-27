@@ -117,7 +117,7 @@ Search the site
         {% for result in results %}
         <li class="tna-column tna-column--full tna-!--margin-bottom-l">
           {{ tnaCard({
-            'supertitle': result.url | result_type,
+            'supertitle': result_type(result.url, result.response_code),
             'headingLevel': 3,
             'headingSize': 's',
             'title': result.title.replace(', Author at The National Archives blog', '').replace(' - The National Archives blog', '').replace(' - The National Archives Design System', '').replace(' - The National Archives', '') | mark(all_query_parts) | safe if result.title else '[No title]',

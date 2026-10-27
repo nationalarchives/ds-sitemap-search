@@ -131,7 +131,9 @@ def contruct_search_query(
                 ) *
                 (
                     CASE
-                        WHEN "url" LIKE {webarchive_domains} THEN {archived_weight}
+                        WHEN "url" LIKE {webarchive_domains}
+                            OR "response_code" >= 400
+                        THEN {archived_weight}
                         ELSE 1
                     END
                 ) AS "relevance"
