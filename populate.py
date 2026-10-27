@@ -1,14 +1,13 @@
 import os
 import re
 import sys
-from multiprocessing import Pool
+from multiprocessing.pool import ThreadPool
 
-import psycopg2
-import psycopg2.extras
 import requests
 from bs4 import BeautifulSoup
-from psycopg2 import sql
-from psycopg2.pool import SimpleConnectionPool
+from psycopg import sql
+from psycopg.rows import dict_row
+from psycopg_pool import ConnectionPool
 
 from app.lib.sitemaps import get_urls_from_sitemap
 from app.lib.urls import correct_url
@@ -31,14 +30,16 @@ def padded_enumeration(number, total):
     return f"[{str(number).rjust(len(str(total)), ' ')}/{total}]"
 
 
-db_connections = SimpleConnectionPool(
-    1,
-    10,
-    host=os.environ.get("DB_HOST"),
-    database=os.environ.get("DB_NAME"),
-    user=os.environ.get("DB_USERNAME"),
-    password=os.environ.get("DB_PASSWORD"),
-    connect_timeout=3,
+db_connections = ConnectionPool(
+    min_size=1,
+    max_size=10,
+    kwargs={
+        "host": os.environ.get("DB_HOST"),
+        "dbname": os.environ.get("DB_NAME"),
+        "user": os.environ.get("DB_USERNAME"),
+        "password": os.environ.get("DB_PASSWORD"),
+        "connect_timeout": 3,
+    },
 )
 
 
@@ -74,7 +75,7 @@ class Engine:
 
         if response.ok:
             conn = db_connections.getconn()
-            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            with conn.cursor(row_factory=dict_row) as cur:
                 soup = BeautifulSoup(response.text, "html.parser")
                 title = soup.title
                 title = title.text if title else None
@@ -119,7 +120,8 @@ class Engine:
                         print(
                             f"{padded_enumeration(index + 1, self.num_urls)} [{bcolors.FAIL} ERROR {bcolors.ENDC}] {fixed_url} - {e}"
                         )
-                        db_connections.putconn(conn, close=True)
+                        conn.close()
+                        db_connections.putconn(conn)
                         return
 
                     print(
@@ -151,7 +153,8 @@ class Engine:
                         print(
                             f"{padded_enumeration(index + 1, self.num_urls)} [{bcolors.FAIL} ERROR {bcolors.ENDC}] {url_to_update} - {e}"
                         )
-                        db_connections.putconn(conn, close=True)
+                        conn.close()
+                        db_connections.putconn(conn)
                         return
 
                     print(
@@ -168,7 +171,7 @@ class Engine:
 
 def process_sitemap(sitemap, skip_existing=False):
     conn = db_connections.getconn()
-    with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+    with conn.cursor(row_factory=dict_row) as cur:
         cur.execute("SELECT url FROM sitemap_urls;")
         existing_urls = cur.fetchall()
     db_connections.putconn(conn)
@@ -176,7 +179,7 @@ def process_sitemap(sitemap, skip_existing=False):
 
     urls = get_urls_from_sitemap(sitemap)
     engine = Engine(len(urls), existing_urls, skip_existing)
-    with Pool(1) as pool:
+    with ThreadPool(1) as pool:
         try:
             pool.map(engine, [(index, url) for index, url in enumerate(urls)], 1)
         except Exception as e:  # noqa: BLE001
@@ -188,7 +191,7 @@ def process_sitemap(sitemap, skip_existing=False):
 
 def populate(skip_existing=False, drop_table=False):
     conn = db_connections.getconn()
-    with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+    with conn.cursor(row_factory=dict_row) as cur:
         if drop_table:
             cur.execute("DROP TABLE IF EXISTS sitemap_urls;")
 
@@ -213,7 +216,7 @@ def populate(skip_existing=False, drop_table=False):
 
 def fix_remapped_domains():
     conn = db_connections.getconn()
-    with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+    with conn.cursor(row_factory=dict_row) as cur:
         cur.execute(sql.SQL("SELECT id, url FROM sitemap_urls;"))
         all_entries = cur.fetchall()
 
@@ -260,5 +263,5 @@ if __name__ == "__main__":
         process_sitemap(sitemap=sitemap)
     else:
         populate()
-    db_connections.closeall()
+    db_connections.close()
     sys.exit(0)

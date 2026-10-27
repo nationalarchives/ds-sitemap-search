@@ -21,6 +21,9 @@ docker compose exec app cp -r /app/node_modules/@nationalarchives/frontend/natio
 
 ### Population
 
+Population uses Psycopg 3's connection pool, installed via the `psycopg[pool]`
+extra. Pages are processed by a single worker thread sharing this pool.
+
 ```sh
 # Populate all pages from sitemaps and update existing entries
 docker compose exec app poetry run python populate.py

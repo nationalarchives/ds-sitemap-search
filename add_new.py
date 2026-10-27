@@ -8,5 +8,5 @@ if __name__ == "__main__":
         process_sitemap(sitemap=sitemap, skip_existing=True)
     else:
         populate(skip_existing=True)
-    db_connections.closeall()
+    db_connections.close()
     sys.exit(0)

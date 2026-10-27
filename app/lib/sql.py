@@ -1,7 +1,7 @@
 import re
 
 from flask import current_app
-from psycopg2 import sql
+from psycopg import sql
 
 
 def get_query_parts(query):
