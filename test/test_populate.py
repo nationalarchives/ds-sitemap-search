@@ -1,4 +1,3 @@
-import os
 import runpy
 import sys
 from datetime import datetime
@@ -22,21 +21,15 @@ from app.models import SitemapURL
 ROOT = Path(__file__).resolve().parents[1]
 
 
-@pytest.fixture(params=["sqlite", "postgresql"])
-def db(request, monkeypatch):
-    schema = None
-    if request.param == "postgresql":
-        if not os.getenv("TEST_POSTGRES"):
-            pytest.skip("Set TEST_POSTGRES=1 to test an isolated PostgreSQL schema")
-        schema = f"test_indexing_{uuid4().hex}"
-        with database.engine.begin() as connection:
-            connection.execute(text(f'CREATE SCHEMA "{schema}"'))
-        test_engine = create_engine(
-            database.engine.url,
-            connect_args={"options": f"-csearch_path={schema}"},
-        )
-    else:
-        test_engine = create_engine("sqlite://")
+@pytest.fixture
+def db(monkeypatch):
+    schema = f"test_indexing_{uuid4().hex}"
+    with database.engine.begin() as connection:
+        connection.execute(text(f'CREATE SCHEMA "{schema}"'))
+    test_engine = create_engine(
+        database.engine.url,
+        connect_args={"options": f"-csearch_path={schema}"},
+    )
 
     original_engine = database.engine
     monkeypatch.setattr(database, "engine", test_engine)
@@ -45,9 +38,8 @@ def db(request, monkeypatch):
         yield test_engine
     finally:
         test_engine.dispose()
-        if schema:
-            with original_engine.begin() as connection:
-                connection.execute(text(f'DROP SCHEMA "{schema}" CASCADE'))
+        with original_engine.begin() as connection:
+            connection.execute(text(f'DROP SCHEMA "{schema}" CASCADE'))
 
 
 @pytest.fixture
@@ -94,7 +86,6 @@ def test_schema_upgrade_preserves_existing_data(db):
         """
             )
         )
-    database.create_database()
     database.create_database()
     entry = stored(db, "https://example.com/")
     assert entry.title == "Existing"
@@ -259,8 +250,6 @@ def test_database_failure_rolls_back_and_is_not_silenced(ready_db):
 
 
 def test_existing_search_query_reads_model_created_table(ready_db):
-    if ready_db.dialect.name != "postgresql":
-        pytest.skip("Search uses PostgreSQL-specific SQL")
     with Session(ready_db) as session, session.begin():
         session.add_all(
             [

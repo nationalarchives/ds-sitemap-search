@@ -56,15 +56,8 @@ docker compose exec app poetry run python clean.py
 ### Run tests
 
 ```sh
-docker compose exec app poetry install --with dev
 docker compose exec app poetry run python -m pytest
-
-# Also test migrations, indexing, and search compatibility against PostgreSQL
-docker compose exec -e TEST_POSTGRES=1 app poetry run python -m pytest test/test_populate.py
 ```
-
-PostgreSQL tests use temporary, isolated schemas which are removed afterwards;
-they do not modify the application's indexed data.
 
 ### Format and lint code
 
