@@ -3,9 +3,9 @@ import os
 import unicodedata
 from urllib.parse import unquote
 
-import psycopg2
-import psycopg2.extras
+import psycopg
 from flask import current_app, render_template, request
+from psycopg.rows import dict_row
 
 from app.lib.cache import cache
 from app.lib.cache_key_prefix import cache_key_prefix
@@ -51,13 +51,13 @@ def index():
     results_per_page = current_app.config.get("RESULTS_PER_PAGE")
 
     # Start a connection to the database and create a cursor
-    conn = psycopg2.connect(
+    conn = psycopg.connect(
         host=os.environ.get("DB_HOST"),
-        database=os.environ.get("DB_NAME"),
+        dbname=os.environ.get("DB_NAME"),
         user=os.environ.get("DB_USERNAME"),
         password=os.environ.get("DB_PASSWORD"),
     )
-    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur = conn.cursor(row_factory=dict_row)
 
     # If there is a query, we need to search the database
     if query or requested_types != "all":
@@ -121,12 +121,12 @@ def index():
         )
     else:
         # If there is no query, we just return the index page with no results
-        sql_query = psycopg2.sql.SQL("""
+        sql_query = psycopg.sql.SQL("""
                     SELECT COUNT(*) AS total_results,
                         MAX(date_updated) AS last_updated
                     FROM sitemap_urls
                     WHERE url NOT LIKE ANY({blacklisted_url_likes})""").format(
-            blacklisted_url_likes=psycopg2.sql.Literal(
+            blacklisted_url_likes=psycopg.sql.Literal(
                 current_app.config.get("BLACKLISTED_URLS_SQL_LIKE")
             )
         )

@@ -1,7 +1,7 @@
 import re
 
 from flask import current_app
-from psycopg2 import sql
+from psycopg import sql
 
 
 def get_query_parts(query):
@@ -131,7 +131,9 @@ def contruct_search_query(
                 ) *
                 (
                     CASE
-                        WHEN "url" LIKE {webarchive_domains} THEN {archived_weight}
+                        WHEN "url" LIKE {webarchive_domains}
+                            OR "response_code" >= 400
+                        THEN {archived_weight}
                         ELSE 1
                     END
                 ) AS "relevance"

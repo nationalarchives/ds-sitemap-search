@@ -21,6 +21,18 @@ docker compose exec app cp -r /app/node_modules/@nationalarchives/frontend/natio
 
 ### Population
 
+Population and domain maintenance use SQLAlchemy's `SitemapURL` model and connection pool with the Psycopg 3 driver.
+
+Pages are processed sequentially, reusing HTTP connections.
+
+Population commands create the table if necessary and add the nullable `response_code` column to existing databases without deleting data. Existing rows have no response code until fetched again. The latest HTTP response code is saved for every fetched URL, including errors.
+
+Failed HTTP responses preserve existing page content; new failed URLs are stored without page content.
+
+Network failures leave the previous code unchanged.
+
+Redirects store the final response code, and skipped URLs are not fetched or updated.
+
 ```sh
 # Populate all pages from sitemaps and update existing entries
 docker compose exec app poetry run python populate.py
@@ -28,7 +40,7 @@ docker compose exec app poetry run python populate.py
 # Process a specific sitemap
 docker compose exec app poetry run python populate.py https://blog.nationalarchives.gov.uk/sitemap.xml
 
-# Add new URLs but don't update existing ones
+# Add new URLs (ones that don't exist in the database) but don't update existing ones
 docker compose exec app poetry run python add_new.py
 
 # Add new URLs from a specific sitemap
@@ -44,7 +56,7 @@ docker compose exec app poetry run python clean.py
 ### Run tests
 
 ```sh
-docker compose exec dev poetry run python -m pytest
+docker compose exec app poetry run python -m pytest
 ```
 
 ### Format and lint code

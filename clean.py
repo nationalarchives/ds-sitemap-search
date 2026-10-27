@@ -1,4 +1,4 @@
-from populate import populate
+from populate import engine, populate
 
 if __name__ == "__main__":
     if (
@@ -8,6 +8,9 @@ if __name__ == "__main__":
         == "yes"
     ):
         print("Dropping all URLs and re-indexing...")
-        populate(drop_table=True)
+        try:
+            populate(drop_table=True)
+        finally:
+            engine.dispose()
     else:
         print("Operation cancelled. No URLs were dropped.")

@@ -1,12 +1,12 @@
 import sys
 
-from populate import db_connections, populate, process_sitemap
+from populate import engine, populate, process_sitemap
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        sitemap = sys.argv[1]
-        process_sitemap(sitemap=sitemap, skip_existing=True)
-    else:
-        populate(skip_existing=True)
-    db_connections.closeall()
-    sys.exit(0)
+    try:
+        if len(sys.argv) > 1:
+            process_sitemap(sitemap=sys.argv[1], skip_existing=True)
+        else:
+            populate(skip_existing=True)
+    finally:
+        engine.dispose()
