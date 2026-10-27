@@ -14,7 +14,7 @@ def remove_quotes(s):
 
 def result_type(url, response_code=None):
     url = correct_url(url)
-    if is_url_archived(url) or (response_code is not None and response_code >= 400):
+    if is_url_archived(url) or (response_code and response_code >= 400):
         return "Archived"
     if "/help-with-your-research/research-guides/" in url:
         return "Research guide"
