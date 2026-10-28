@@ -102,6 +102,6 @@ In addition to the [base Docker image variables](https://github.com/nationalarch
 | `ARCHIVED_URLS`                      | A CSV list of archived URLs                                                 | _See `ARCHIVED_URLS` in `config.py`_                      |
 | `BLACKLISTED_URLS_SQL_LIKE`          | A CSV list of URLs to exclude from search results                           | _See `config.py`_                                         |
 | `RESULTS_PER_PAGE`                   | The number of results to show on a page                                     | `12`                                                      |
-| `UNRESTRICTED_ACCESS_HEADER`                   | The value for the `x-external-access-key`                                     | _none_                                                      |
+| `UNRESTRICTED_ACCESS_HEADER`         | The value for the `x-external-access-key`                                   | _none_                                                    |
 
 [^1] [Debugging in Flask](https://flask.palletsprojects.com/en/2.3.x/debugging/)
