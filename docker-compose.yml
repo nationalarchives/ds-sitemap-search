@@ -22,6 +22,7 @@ services:
       - SITEMAPS=https://host.docker.internal/sitemap.xml
       - DOMAIN_REMAPS={"https://localhost/":"https://host.docker.internal/"}
       - FEATURE_PHASE_BANNER=False
+      - UNRESTRICTED_ACCESS_HEADER
     ports:
       - 65525:8080
     depends_on:

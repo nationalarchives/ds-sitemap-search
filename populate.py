@@ -20,6 +20,11 @@ def padded_enumeration(number, total):
 class PageIndexer:
     def __init__(self, http, num_urls, existing_urls, skip_existing=False):
         self.http = http
+        self.http.headers.update({"User-Agent": "ds-sitemap-search"})
+        if UNRESTRICTED_ACCESS_HEADER := os.getenv("UNRESTRICTED_ACCESS_HEADER"):
+            self.http.headers.update(
+                {"x-external-access-key": UNRESTRICTED_ACCESS_HEADER}
+            )
         self.num_urls = num_urls
         self.existing_urls = existing_urls
         self.skip_existing = skip_existing
@@ -35,9 +40,9 @@ class PageIndexer:
             return
 
         try:
-            response = self.http.get(fixed_url, timeout=10, verify=False)
+            response = self.http.get(fixed_url, timeout=10, headers=self.http.headers)
         except requests.RequestException as error:
-            print(f"{progress} [ERROR] {fixed_url} - {error}")
+            print(f"{progress} [ ERROR ] {fixed_url} - {error}")
             return
 
         with response:
@@ -76,9 +81,9 @@ class PageIndexer:
                 entry.date_updated = func.current_timestamp()
 
             self.existing_urls.update((url, fixed_url))
-            if response.ok:
-                action = "ADDED" if added else "UPDATED"
-                print(f"{progress} [{action}] {fixed_url}")
+            if response.status_code in [200, 404, 410]:
+                action = " ADDED " if added else "UPDATED"
+                print(f"{progress} [{action} ({response.status_code})] {fixed_url}")
             else:
                 print(f"{progress} [ERROR] {fixed_url} - {response.status_code}")
 
@@ -92,13 +97,9 @@ def process_sitemap(sitemap, skip_existing=False):
 
     urls = get_urls_from_sitemap(sitemap)
     with requests.Session() as http:
-        http.headers.update(
-            {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/58.0.3029.110 Safari/537.3"
-            }
-        )
+        http.headers.update({"User-Agent": "ds-sitemap-search"})
+        if UNRESTRICTED_ACCESS_HEADER := os.getenv("UNRESTRICTED_ACCESS_HEADER"):
+            http.headers.update({"x-external-access-key": UNRESTRICTED_ACCESS_HEADER})
         indexer = PageIndexer(http, len(urls), existing_urls, skip_existing)
         for data in enumerate(urls):
             indexer(data)
