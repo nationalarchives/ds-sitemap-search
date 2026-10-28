@@ -1,5 +1,4 @@
 import ssl
-import sys
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -42,9 +41,12 @@ def get_urls_from_sitemap(sitemap_url):
             return parse_sitemap(root)
     except urllib.error.HTTPError as e:
         print(f"⚠️ [ FAIL ] {sitemap_url} - HTTPError: {e.code}")
-        sys.exit(1)
+        return []
     except urllib.error.URLError as e:
         print(f"⚠️ [ FAIL ] {sitemap_url} - URLError: {e.reason}")
-        sys.exit(1)
+        return []
+    except ET.ParseError as e:
+        print(f"⚠️ [ FAIL ] {sitemap_url} - ParseError: {e}")
+        return []
     print(f"⚠️ [ FAIL ] {sitemap_url} - An unknown error occured")
-    sys.exit(1)
+    return []
