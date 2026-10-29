@@ -135,6 +135,23 @@ def fix_remapped_domains():
             del entries[url]
 
 
+def reindex_errors():
+    create_database()
+    urls_to_reindex = []
+    with Session(engine) as session:
+        urls_to_reindex = session.scalars(
+            select(SitemapURL.url).where(
+                (SitemapURL.response_code >= 400) | (SitemapURL.response_code == None)
+            )
+        ).all()
+    http = requests.Session()
+    indexer = PageIndexer(
+        http, len(urls_to_reindex), set(urls_to_reindex), skip_existing=False
+    )
+    for data in enumerate(urls_to_reindex):
+        indexer(data)
+
+
 if __name__ == "__main__":
     try:
         if len(sys.argv) > 1:
