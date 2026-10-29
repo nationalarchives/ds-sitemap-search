@@ -106,5 +106,7 @@ In addition to the [base Docker image variables](https://github.com/nationalarch
 | `BLACKLISTED_URLS_SQL_LIKE`          | A CSV list of URLs to exclude from search results                           | _See `config.py`_                                         |
 | `RESULTS_PER_PAGE`                   | The number of results to show on a page                                     | `12`                                                      |
 | `UNRESTRICTED_ACCESS_HEADER`         | The value for the `x-external-access-key`                                   | _none_                                                    |
+| `MAX_REQUEST_ATTEMPTS`               | The number of times to retry a page following a `5xx` error                 | `3`                                                       |
+| `RETRY_DELAY_SECONDS`                | The number of seconds to wait between failed requests                       | `10`                                                      |
 
 [^1] [Debugging in Flask](https://flask.palletsprojects.com/en/2.3.x/debugging/)

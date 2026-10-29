@@ -98,7 +98,7 @@ def test_schema_upgrade_preserves_existing_data(db):
 @pytest.mark.parametrize("existing", [False, True])
 @pytest.mark.parametrize("status", [200, 404, 500])
 def test_indexing_stores_status_and_preserves_failed_content(
-    ready_db, existing, status
+    ready_db, existing, status, monkeypatch
 ):
     url = "https://example.com/"
     if existing:
@@ -114,8 +114,14 @@ def test_indexing_stores_status_and_preserves_failed_content(
             )
     http = Mock()
     http.get.return_value = response(status)
+    sleep = Mock()
+    monkeypatch.setattr(populate.time, "sleep", sleep)
     indexer = populate.PageIndexer(http, 1, {url} if existing else set())
     indexer((0, url))
+    assert http.get.call_count == (3 if status >= 500 else 1)
+    assert sleep.call_args_list == (
+        [call(populate.RETRY_DELAY_SECONDS)] * 2 if status >= 500 else []
+    )
     entry = stored(ready_db, url)
     assert entry.response_code == status
     assert entry.date_updated is not None
@@ -134,6 +140,42 @@ def test_indexing_stores_status_and_preserves_failed_content(
         assert entry.title is None
         assert entry.body is None
     assert url in indexer.existing_urls
+
+
+@pytest.mark.parametrize(
+    "statuses, expected_status, expected_attempts",
+    [([503, 200], 200, 2), ([500, 500, 500], 500, 3)],
+)
+def test_indexing_retries_server_errors_with_configured_waits(
+    monkeypatch, statuses, expected_status, expected_attempts
+):
+    url = "https://example.com/"
+    session = Mock()
+    session.__enter__ = Mock(return_value=session)
+    session.__exit__ = Mock(return_value=False)
+    transaction = Mock()
+    transaction.__enter__ = Mock(return_value=transaction)
+    transaction.__exit__ = Mock(return_value=False)
+    session.begin.return_value = transaction
+    session.scalars.return_value = []
+    monkeypatch.setattr(populate, "Session", Mock(return_value=session))
+
+    http = Mock()
+    http.get.side_effect = [response(status) for status in statuses]
+    sleep = Mock()
+    monkeypatch.setattr(populate.time, "sleep", sleep)
+
+    populate.PageIndexer(http, 1, set())((0, url))
+
+    entry = session.add.call_args.args[0]
+    assert http.get.call_count == expected_attempts
+    assert sleep.call_args_list == [call(populate.RETRY_DELAY_SECONDS)] * (
+        expected_attempts - 1
+    )
+    assert entry.response_code == expected_status
+    if expected_status == 200:
+        assert entry.title == "Page"
+        assert entry.body == "Content"
 
 
 def test_status_is_updated_when_content_and_code_are_unchanged(ready_db):
