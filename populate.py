@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+import time
 
 import requests
 from bs4 import BeautifulSoup
@@ -11,6 +12,9 @@ from app.lib.database import create_database, engine
 from app.lib.sitemaps import get_urls_from_sitemap
 from app.lib.urls import correct_url
 from app.models import SitemapURL
+
+MAX_REQUEST_ATTEMPTS = int(os.getenv("MAX_REQUEST_ATTEMPTS", "3"))
+RETRY_DELAY_SECONDS = int(os.getenv("RETRY_DELAY_SECONDS", "10"))
 
 
 def padded_enumeration(number, total):
@@ -39,11 +43,18 @@ class PageIndexer:
             print(f"{progress} [SKIPPED] {url} (already exists)")
             return
 
-        try:
-            response = self.http.get(fixed_url, timeout=10, headers=self.http.headers)
-        except requests.RequestException as error:
-            print(f"{progress} [ ERROR ] {fixed_url} - {error}")
-            return
+        for attempt in range(MAX_REQUEST_ATTEMPTS):
+            try:
+                response = self.http.get(
+                    fixed_url, timeout=10, headers=self.http.headers
+                )
+            except requests.RequestException as error:
+                print(f"{progress} [ ERROR ] {fixed_url} - {error}")
+                return
+            if response.status_code < 500 or attempt == MAX_REQUEST_ATTEMPTS - 1:
+                break
+            response.close()
+            time.sleep(RETRY_DELAY_SECONDS)
 
         with response:
             values = {"response_code": response.status_code}
@@ -133,6 +144,23 @@ def fix_remapped_domains():
                 entries[remapped_url] = entry
                 print(f"Updated URL: {url} -> {remapped_url}")
             del entries[url]
+
+
+def reindex_errors():
+    create_database()
+    urls_to_reindex = []
+    with Session(engine) as session:
+        urls_to_reindex = session.scalars(
+            select(SitemapURL.url).where(
+                (SitemapURL.response_code >= 400) | (SitemapURL.response_code == None)
+            )
+        ).all()
+    http = requests.Session()
+    indexer = PageIndexer(
+        http, len(urls_to_reindex), set(urls_to_reindex), skip_existing=False
+    )
+    for data in enumerate(urls_to_reindex):
+        indexer(data)
 
 
 if __name__ == "__main__":

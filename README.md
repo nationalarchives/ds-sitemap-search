@@ -46,6 +46,9 @@ docker compose exec app poetry run python add_new.py
 # Add new URLs from a specific sitemap
 docker compose exec app poetry run python add_new.py https://blog.nationalarchives.gov.uk/sitemap.xml
 
+# Attempt to re-index any entries that have an error
+docker compose exec app poetry run python reindex_errors.py
+
 # Fix URLs with remapped domains (e.g. website.live.local)
 docker compose exec app poetry run python fix_remapped_domains.py
 
@@ -103,5 +106,7 @@ In addition to the [base Docker image variables](https://github.com/nationalarch
 | `BLACKLISTED_URLS_SQL_LIKE`          | A CSV list of URLs to exclude from search results                           | _See `config.py`_                                         |
 | `RESULTS_PER_PAGE`                   | The number of results to show on a page                                     | `12`                                                      |
 | `UNRESTRICTED_ACCESS_HEADER`         | The value for the `x-external-access-key`                                   | _none_                                                    |
+| `MAX_REQUEST_ATTEMPTS`               | The number of times to retry a page following a `5xx` error                 | `3`                                                       |
+| `RETRY_DELAY_SECONDS`                | The number of seconds to wait between failed requests                       | `10`                                                      |
 
 [^1] [Debugging in Flask](https://flask.palletsprojects.com/en/2.3.x/debugging/)
