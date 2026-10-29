@@ -1,41 +1,191 @@
 {% extends "base.html" %}
 
-{%- set pageTitle = 'Welcome' -%}
+{%- from 'components/breadcrumbs/macro.html' import tnaBreadcrumbs -%}
+{%- from 'components/card/macro.html' import tnaCard -%}
+{%- from 'components/pagination/macro.html' import tnaPagination -%}
+{%- from 'components/radios/macro.html' import tnaRadios -%}
+{%- from 'components/search-field/macro.html' import tnaSearchField -%}
+{%- from 'components/skip-link/macro.html' import tnaSkipLink -%}
+{%- from 'components/warning/macro.html' import tnaWarning -%}
 
-{% block content %}
-<div class="tna-section">
+{%- from 'main/_discovery-search.html' import discoverySearch -%}
+
+{%- set pageTitle -%}
+{% if q %}
+  Search results for "{{ q | remove_quotes }}"
+{% else %}
+Search the site
+{% endif %}
+{%- endset -%}
+
+{% block skipLink %}
+{% if q %}
+{{ tnaSkipLink({
+  'href': 'results',
+  'text': 'Skip to list of results'
+}) }}
+{{ super() }}
+{% endif %}
+{% endblock skipLink %}
+
+{% block beforeContent %}
+<div class="tna-background-accent-light">
   <div class="tna-container">
-    <div class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny">
-      <h1 class="tna-heading-xl">TNA Flask application</h1>
-      <p class="tna-large-paragraph">Get started building a National Archives Flask application.</p>
-      <h2 class="tna-heading-l">Useful links</h2>
-      <ul class="tna-ul">
-        <li>
-          <a href="https://nationalarchives.github.io/engineering-handbook/">The National Archives Engineering Handbook</a>
-        </li>
-      </ul>
-      <h3 class="tna-heading-m">Frontend resources</h3>
-      <ul class="tna-ul">
-        <li>
-          <a href="https://github.com/nationalarchives/tna-frontend">TNA Frontend</a>
-        </li>
-        <li>
-          <a href="https://github.com/nationalarchives/tna-frontend-jinja">TNA Frontend Jinja templates</a>
-        </li>
-        <li>
-          <a href="https://nationalarchives.github.io/design-system/">The National Archives Design System</a>
-        </li>
-      </ul>
-      <h3 class="tna-heading-m">Backend resources</h3>
-      <ul class="tna-ul">
-        <li>
-          <a href="https://github.com/nationalarchives/docker">The National Archives base Docker images</a>
-        </li>
-        <li>
-          <a href="https://github.com/nationalarchives/ds-docker-actions">Digital Services Docker build actions</a>
-        </li>
-      </ul>
+    <div class="tna-column tna-column--full">
+      {{ tnaBreadcrumbs({
+        'items': [
+          {
+            'text': 'Home',
+            'href': '/'
+          }
+        ],
+        'structuredData': True,
+        'classes': 'tna-!--padding-vertical-s'
+      }) }}
     </div>
   </div>
 </div>
+{% endblock beforeContent %}
+
+{% block content %}
+<div class="tna-background-accent-light tna-!--padding-top-s tna-!--padding-bottom-l">
+  <form class="tna-container" method="get" action="{{ url_for('main.index') }}" role="search">
+    <div class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny">
+      {{ tnaSearchField({
+        'label': 'Search The National Archives website',
+        'headingLevel': 1,
+        'headingSize': 'l',
+        'id': 'search',
+        'name': 'q',
+        'value': q
+      }) }}
+    </div>
+    {#
+    <div class="tna-column tna-column--full tna-!--margin-top-s">
+      {{ tnaRadios({
+        'label': 'Page types',
+        'headingSize': 's',
+        'id': 'search-types',
+        'name': 'types',
+        'items': [
+          {
+            'text': 'All',
+            'value': 'all'
+          },
+          {
+            'text': 'Research guides',
+            'value': 'research-guides'
+          },
+          {
+            'text': 'Archived blog posts',
+            'value': 'archived-blog-posts',
+          },
+          {
+            'text': 'Education and Outreach',
+            'value': 'education-and-outreach',
+          }
+        ],
+        'selected': request.args.get('types', 'all') if request.args.get('types') in ['research-guides', 'archived-blog-posts', 'education-and-outreach'] else 'all',
+        'inline': True
+      }) }}
+    </div>
+    #}
+  </form>
+</div>
+
+{% if num_query_parts_exceeded %}
+<div class="tna-container">
+  <div class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--margin-top-m">
+    {{ tnaWarning({
+      'headingLevel': 2,
+      'body': 'Your search term is too complex. Some parts of your query have been ignored. Simplify your search for better results or add quotes to search for longer strings of text.'
+    }) }}
+  </div>
+</div>
+{% endif %}
+
+{% if results %}
+<section>
+  <div class="tna-container">
+    <div id="results" class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--margin-top-s">
+      <h2 class="tna-visually-hidden">Results</h2>
+      <p class="tna-!--no-margin-top tna-!--padding-top-s">Showing <strong>{{ ((results_per_page * (page - 1)) + 1) | commafy }}–{{ (results_per_page * page if results_per_page * page < total_results else total_results) | commafy }}</strong> of <strong>{{ total_results | commafy }}</strong> results{% if all_query_parts %} for {% for part in all_query_parts -%}
+      {{ '' if loop.first else ', ' if not loop.last else ' or' }} &quot;{{ part }}&quot;
+      {%- endfor -%}
+      {% endif -%}</p>
+      <ul class="tna-container tna-container--nested tna-!--margin-top-m">
+        {% for result in results %}
+        <li class="tna-column tna-column--full tna-!--margin-bottom-l">
+          {{ tnaCard({
+            'supertitle': result_type(result.url, result.response_code or 0),
+            'headingLevel': 3,
+            'headingSize': 's',
+            'title': result.title.replace(', Author at The National Archives blog', '').replace(' - The National Archives blog', '').replace(' - The National Archives Design System', '').replace(' - The National Archives', '') | mark(all_query_parts) | safe if result.title else '[No title]',
+            'href': result.url | correct_url,
+            'body': ('<p>' ~ (result.description | mark(all_query_parts)) ~ '</p>' if result.description and result.description != '...' else '') ~ '<p><small>' ~ (result.url | correct_url | mark(all_query_parts)) ~ '</small></p>',
+            'fullAreaClick': True,
+            'attributes': {
+              'data-id': result.id,
+              'data-relevance': result.relevance,
+              'data-result-position': ((results_per_page * (page - 1)) + loop.index)
+            }
+          }) }}
+        </li>
+        {% endfor %}
+      </ul>
+      {% if pages > 1 %}
+      {{ tnaPagination(pagination) }}
+      {% endif %}
+    </div>
+    <div class="tna-column tna-column--width-1-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--margin-top-l">
+      {{ discoverySearch(q) }}
+    </div>
+  </div>
+</section>
+{% elif q %}
+<div class="tna-container">
+  <div class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--padding-top-l">
+    <h2 class="tna-heading-xl" id="results">No results found</h2>
+    <p>Try the following:</p>
+    <ul class="tna-ul">
+      <li>Check your spelling</li>
+      <li>Try different keywords</li>
+      <li>Broaden your search keywords</li>
+      {%- if request.args.get('types', 'all') != 'all' %}
+      <li>Try <a href="?q={{ q }}&types=all">searching all page types</a></li>
+      {%- endif %}
+    </ul>
+  </div>
+  <div class="tna-column tna-column--width-1-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--margin-top-l">
+    {{ discoverySearch(q) }}
+  </div>
+</div>
+{% else %}
+<div class="tna-container">
+  <div class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--margin-vertical-m">
+    <p><strong>{{ total_results | commafy }}</strong> pages indexed.</p>
+    {% if last_updated %}
+      <p>Last updated <strong><time datetime="{{ last_updated }}">{{ last_updated | pretty_age }}</time></strong>.</p>
+    {% endif %}
+    <!-- <h2 class="tna-heading-l">Example searches</h2>
+    <ul class="tna-ul">
+      <li>
+        <a href="?q=&quot;section+28&quot;&types=all">Find out about Section 28</a>
+      </li>
+      <li>
+        <a href="?q=ufo&types=research-guides">Get help with how to research UFOs</a>
+      </li>
+      <li>
+        <a href="?q=Vicky+Iglikowski-Broad&types=archived-blog-posts">Read archived blog posts by Vicky Iglikowski-Broad</a>
+      </li>
+      <li>
+        <a href="?q=tudors&types=education-and-outreach">See our educational resources about Tudors</a>
+      </li>
+    </ul> -->
+  </div>
+  <div class="tna-column tna-column--width-1-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--margin-top-l">
+    {{ discoverySearch(q) }}
+  </div>
+</div>
+{% endif %}
 {% endblock content %}

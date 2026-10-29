@@ -5,6 +5,7 @@ import sentry_sdk
 from flask import Flask
 from jinja2 import ChoiceLoader, PackageLoader
 from tna_utilities.datetime import pretty_age, pretty_datetime
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from app.lib.cache import cache
 from app.lib.context_processor import cookie_preference, now_iso_8601
@@ -19,8 +20,17 @@ from app.lib.urls import correct_url, is_url_archived
 
 
 def create_app(config_class):
-    app = Flask(__name__, static_url_path="/search/static")
+    app = Flask(__name__)
     app.config.from_object(config_class)
+
+    if proxy_depth := app.config.get("PROXY_DEPTH"):
+        app.wsgi_app = ProxyFix(
+            app.wsgi_app,
+            x_for=proxy_depth,
+            x_proto=proxy_depth,
+            x_host=proxy_depth,
+            x_prefix=proxy_depth,
+        )
 
     if app.config.get("SENTRY_DSN"):
         sentry_sdk.init(
@@ -98,10 +108,8 @@ def create_app(config_class):
 
     from .healthcheck import bp as healthcheck_bp
     from .main import bp as site_bp
-    from .sitemap_search import bp as sitemap_search_bp
 
     app.register_blueprint(healthcheck_bp, url_prefix="/healthcheck")
     app.register_blueprint(site_bp)
-    app.register_blueprint(sitemap_search_bp, url_prefix="/search")
 
     return app
