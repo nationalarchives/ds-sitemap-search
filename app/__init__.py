@@ -1,11 +1,11 @@
 import logging
 import os
-from werkzeug.middleware.proxy_fix import ProxyFix
 
 import sentry_sdk
 from flask import Flask
 from jinja2 import ChoiceLoader, PackageLoader
 from tna_utilities.datetime import pretty_age, pretty_datetime
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from app.lib.cache import cache
 from app.lib.context_processor import cookie_preference, now_iso_8601
@@ -23,14 +23,13 @@ def create_app(config_class):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
-    proxy_depth = os.getenv("PROXY_DEPTH", 1)
-    if proxy_depth:
+    if proxy_depth := app.config.get("PROXY_DEPTH"):
         app.wsgi_app = ProxyFix(
             app.wsgi_app,
             x_for=proxy_depth,
             x_proto=proxy_depth,
             x_host=proxy_depth,
-            x_prefix=proxy_depth
+            x_prefix=proxy_depth,
         )
 
     if app.config.get("SENTRY_DSN"):
