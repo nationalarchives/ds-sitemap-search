@@ -12,7 +12,7 @@ def remove_quotes(s):
     return s.replace('"', "").replace("'", "")
 
 
-def result_type(url, response_code=None):
+def result_type(url, response_code=0):
     url = correct_url(url)
     if is_url_archived(url) or (response_code and response_code >= 400):
         return "Archived"
