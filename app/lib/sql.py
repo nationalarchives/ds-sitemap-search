@@ -83,19 +83,6 @@ def contruct_search_query(
 
     # Add a sub-query to filter by types if requested
     types_sub_query = sql.SQL("")
-    if requested_types == "research-guides":
-        types_sub_query = sql.SQL("""
-            AND "url" LIKE '%/help-with-your-research/research-guides/%'
-            AND "url" NOT LIKE '%/help-with-your-research/research-guides/'
-            """)
-    elif requested_types == "archived-blog-posts":
-        types_sub_query = sql.SQL(
-            """AND "url" LIKE 'https://blog.nationalarchives.gov.uk/%'"""
-        )
-    elif requested_types == "education-and-outreach":
-        types_sub_query = sql.SQL(
-            """AND "url" LIKE '%.nationalarchives.gov.uk/education/%'"""
-        )
 
     blacklisted_urls = current_app.config.get("BLACKLISTED_URLS_SQL_LIKE")
     blacklist_sub_where = (
@@ -118,6 +105,7 @@ def contruct_search_query(
                 "title",
                 "url",
                 "description",
+                "response_code",
                 (
                     (
                         {search_sub_query}
@@ -147,6 +135,7 @@ def contruct_search_query(
             "title",
             "url",
             "description",
+            "response_code",
             "relevance",
             (SELECT COUNT(*) FROM "scored_results" WHERE "relevance" > 0) AS "total_results"
         FROM "scored_results"

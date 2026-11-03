@@ -61,6 +61,12 @@
   }
 }
 
+p {
+  a {
+    overflow-wrap: anywhere;
+  }
+}
+
 mark {
   @include colour.yellow-accent;
   @include colour.accent;
