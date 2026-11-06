@@ -4,7 +4,7 @@ import unicodedata
 from urllib.parse import unquote
 
 import psycopg
-from flask import current_app, render_template, request
+from flask import current_app, redirect, render_template, request, url_for
 from psycopg.rows import dict_row
 
 from app.lib.cache import cache
@@ -153,3 +153,9 @@ def index():
             results_per_page=results_per_page,
             pagination={},
         )
+
+
+@bp.route("/results")
+def old_results():
+    query = request.args.get("_q", "")
+    return redirect(url_for("sitemap_search.index", q=query))
