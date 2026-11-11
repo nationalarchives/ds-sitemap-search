@@ -29,6 +29,7 @@
 {% endblock headIcons %}
 
 {% block head %}
+    <meta name="tna.request.query" content="{{ q | default('') }}">
     <meta name="tna.response.generated" content="{{ now_iso_8601() }}">
     <meta name="tna.response.status_code" content="{{ status_code | default('200') }}">
     <meta name="tna.app.container-image" content="{{ app_config.CONTAINER_IMAGE }}">
