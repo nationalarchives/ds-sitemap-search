@@ -87,7 +87,7 @@ def contruct_search_query(
                 )
             )
         sql_sub_queries.append(
-            sql.SQL("( {part_scores} * {weight} )").format(
+            sql.SQL("( ( {part_scores} ) * {weight} )").format(
                 part_scores=sql.SQL(" + ").join(sql_sub_query_parts),
                 weight=sql.Literal(
                     current_app.config.get("RELEVANCE_QUOTE_MATCH_MULTIPLIER")

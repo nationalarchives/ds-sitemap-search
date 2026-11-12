@@ -28,7 +28,7 @@ def index():
     """
 
     # Get the query from the query parameters
-    query = unquote(request.args.get("q", ""))
+    query = unquote(request.args.get("q", "")).replace("+", " ")
 
     # Normalise the query to remove any special characters
     query = (
