@@ -22,15 +22,36 @@ def result_type(url, response_code=0):
 
 
 def mark(s, substrings):
-    substrings = (
-        substrings
-        if isinstance(substrings, list)
-        else [
-            re.escape(string.replace('"', "").strip())
+    if not isinstance(substrings, list):
+        substrings = [
+            string.replace('"', "").strip()
             for string in substrings.split(" ")
-            if string
+            if string.strip()
         ]
+
+    patterns = []
+    for substring in substrings:
+        substring = substring.strip()
+        if not substring:
+            continue
+
+        encoded_substring = quote_plus(substring)
+        pattern = re.escape(encoded_substring)
+        if " " in substring:
+            words = substring.split()
+            text_phrase = r"\s+".join(re.escape(word) for word in words)
+            plus_encoded_phrase = re.escape(encoded_substring)
+            percent_encoded_phrase = re.escape(encoded_substring.replace("+", "%20"))
+            pattern = (
+                f"(?:{text_phrase}|{plus_encoded_phrase}|{percent_encoded_phrase})"
+            )
+        patterns.append((len(substring), pattern))
+
+    if not patterns:
+        return s
+
+    patterns.sort(key=lambda item: item[0], reverse=True)
+    compiled = re.compile(
+        f"({'|'.join(pattern for _, pattern in patterns)})", re.IGNORECASE
     )
-    substrings = [re.escape(quote_plus(string)) for string in substrings if string]
-    compiled = re.compile(f"({'|'.join(substrings)})", re.IGNORECASE)
     return compiled.sub(r"<mark>\g<0></mark>", s)

@@ -359,7 +359,7 @@ def test_existing_search_query_reads_model_created_table(ready_db):
     app = Flask(__name__)
     app.config.from_object("config.Test")
     with app.app_context():
-        query = contruct_search_query(["needle"], set(), "all", results_per_page=1)
+        query = contruct_search_query(["needle"], set(), results_per_page=1)
     connection = ready_db.raw_connection()
     try:
         with connection.cursor(row_factory=dict_row) as cursor:
@@ -409,11 +409,9 @@ def test_multi_term_search_preserves_scoring_and_pagination(ready_db):
         BLACKLISTED_URLS_SQL_LIKE=["%/hidden"],
     )
     with app.app_context():
-        query = contruct_search_query(
-            ["needle", "ne"], {"ne"}, "all", results_per_page=2
-        )
+        query = contruct_search_query(["needle", "ne"], {"ne"}, results_per_page=2)
         next_page = contruct_search_query(
-            ["needle", "ne"], {"ne"}, "all", page=2, results_per_page=2
+            ["needle", "ne"], {"ne"}, page=2, results_per_page=2
         )
 
     connection = ready_db.raw_connection()
@@ -461,8 +459,8 @@ def test_quoted_match_weight_applies_to_every_field(ready_db, extra_part):
     )
     parts = ["needle", "unmatched"] if extra_part else ["needle"]
     with app.app_context():
-        unquoted = contruct_search_query(parts, set(), "all")
-        quoted = contruct_search_query(parts, {"needle"}, "all")
+        unquoted = contruct_search_query(parts, set())
+        quoted = contruct_search_query(parts, {"needle"})
 
     connection = ready_db.raw_connection()
     try:

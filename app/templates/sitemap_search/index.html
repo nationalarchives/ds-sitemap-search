@@ -3,7 +3,6 @@
 {%- from 'components/breadcrumbs/macro.html' import tnaBreadcrumbs -%}
 {%- from 'components/card/macro.html' import tnaCard -%}
 {%- from 'components/pagination/macro.html' import tnaPagination -%}
-{%- from 'components/radios/macro.html' import tnaRadios -%}
 {%- from 'components/search-field/macro.html' import tnaSearchField -%}
 {%- from 'components/skip-link/macro.html' import tnaSkipLink -%}
 {%- from 'components/warning/macro.html' import tnaWarning -%}
@@ -47,6 +46,14 @@ Search the site
 </div>
 {% endblock beforeContent %}
 
+{% set num_query_parts_exceeded_warning %}
+<p>Your search term is too complex. Some parts of your query have been ignored. Simplify your search for better results or add quotes to search for longer strings of text.</p>
+{% endset %}
+
+{% set stop_words_removed_warning %}
+<p>Common words such as “the”, “and” and “of” have been ignored to help focus your search.</p>
+{% endset %}
+
 {% block content %}
 <div class="tna-background-accent-light tna-!--padding-top-s tna-!--padding-bottom-l">
   <form class="tna-container" method="get" action="{{ url_for('sitemap_search.index') }}" role="search">
@@ -60,54 +67,28 @@ Search the site
         'value': q
       }) }}
     </div>
-    {#
-    <div class="tna-column tna-column--full tna-!--margin-top-s">
-      {{ tnaRadios({
-        'label': 'Page types',
-        'headingSize': 's',
-        'id': 'search-types',
-        'name': 'types',
-        'items': [
-          {
-            'text': 'All',
-            'value': 'all'
-          },
-          {
-            'text': 'Research guides',
-            'value': 'research-guides'
-          },
-          {
-            'text': 'Archived blog posts',
-            'value': 'archived-blog-posts',
-          },
-          {
-            'text': 'Education and Outreach',
-            'value': 'education-and-outreach',
-          }
-        ],
-        'selected': request.args.get('types', 'all') if request.args.get('types') in ['research-guides', 'archived-blog-posts', 'education-and-outreach'] else 'all',
-        'inline': True
-      }) }}
-    </div>
-    #}
   </form>
 </div>
-
-{% if num_query_parts_exceeded %}
-<div class="tna-container">
-  <div class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--margin-top-m">
-    {{ tnaWarning({
-      'headingLevel': 2,
-      'body': 'Your search term is too complex. Some parts of your query have been ignored. Simplify your search for better results or add quotes to search for longer strings of text.'
-    }) }}
-  </div>
-</div>
-{% endif %}
 
 {% if results %}
 <section>
   <div class="tna-container">
     <div id="results" class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--margin-top-s">
+      {% if num_query_parts_exceeded or stop_words_removed %}
+        {% set warning_text = '' %}
+        {% if num_query_parts_exceeded %}
+          {% set warning_text = warning_text ~ num_query_parts_exceeded_warning %}
+        {% endif %}
+        {% if stop_words_removed %}
+          {% set warning_text = warning_text ~ stop_words_removed_warning %}
+        {% endif %}
+        {{ tnaWarning({
+          'headingLevel': 2,
+          'body': warning_text,
+          'classes': 'tna-!--margin-top-m tna-!--margin-bottom-s'
+        }) }}
+      {% endif %}
+
       <h2 class="tna-visually-hidden">Results</h2>
       <p class="tna-!--no-margin-top tna-!--padding-top-s">Showing <strong>{{ ((results_per_page * (page - 1)) + 1) | commafy }}–{{ (results_per_page * page if results_per_page * page < total_results else total_results) | commafy }}</strong> of <strong>{{ total_results | commafy }}</strong> results{% if all_query_parts %} for {% for part in all_query_parts -%}
       {{ '' if loop.first else ', ' if not loop.last else ' or' }} &quot;{{ part }}&quot;
@@ -145,15 +126,18 @@ Search the site
 {% elif q %}
 <div class="tna-container">
   <div class="tna-column tna-column--width-2-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--padding-top-l">
+    {% if stop_words_removed %}
+      {{ tnaWarning({
+        'headingLevel': 2,
+        'body': stop_words_removed_warning
+      }) }}
+    {% endif %}
     <h2 class="tna-heading-xl" id="results">No results found</h2>
     <p>Try the following:</p>
     <ul class="tna-ul">
       <li>Check your spelling</li>
       <li>Try different keywords</li>
       <li>Broaden your search keywords</li>
-      {%- if request.args.get('types', 'all') != 'all' %}
-      <li>Try <a href="?q={{ q }}&types=all">searching all page types</a></li>
-      {%- endif %}
     </ul>
   </div>
   <div class="tna-column tna-column--width-1-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--margin-top-l">
@@ -167,21 +151,6 @@ Search the site
     {% if last_updated %}
       <p>Last updated <strong><time datetime="{{ last_updated }}">{{ last_updated | pretty_age }}</time></strong>.</p>
     {% endif %}
-    <!-- <h2 class="tna-heading-l">Example searches</h2>
-    <ul class="tna-ul">
-      <li>
-        <a href="?q=&quot;section+28&quot;&types=all">Find out about Section 28</a>
-      </li>
-      <li>
-        <a href="?q=ufo&types=research-guides">Get help with how to research UFOs</a>
-      </li>
-      <li>
-        <a href="?q=Vicky+Iglikowski-Broad&types=archived-blog-posts">Read archived blog posts by Vicky Iglikowski-Broad</a>
-      </li>
-      <li>
-        <a href="?q=tudors&types=education-and-outreach">See our educational resources about Tudors</a>
-      </li>
-    </ul> -->
   </div>
   <div class="tna-column tna-column--width-1-3 tna-column--width-5-6-medium tna-column--full-small tna-column--full-tiny tna-!--margin-top-l">
     {{ discoverySearch(q) }}
