@@ -51,6 +51,10 @@ def contruct_search_query(
         },
     ]
 
+    # Reuse normalised fields for multi-term searches rather than recalculating
+    # them for every term.
+    prepare_fields = len(all_query_parts) > 1
+
     # Build a list of SQL sub-queries for each query part to search the fields
     sql_sub_queries = []
     for query_part in all_query_parts:
@@ -61,17 +65,29 @@ def contruct_search_query(
             sql_sub_query_parts.append(
                 sql.SQL("""(
                             CASE WHEN {field} IS NOT NULL THEN (
-                                CHAR_LENGTH({field}) -
-                                CHAR_LENGTH(REPLACE(LOWER({field}), {query_part}, ''))
+                                {field_length} -
+                                CHAR_LENGTH(REPLACE({lower_field}, {query_part}, ''))
                             ) * {field_weight} ELSE 0 END
                         )""").format(
                     field=sql.Identifier(field_name),
+                    field_length=(
+                        sql.Identifier(f"{field_name}_length")
+                        if prepare_fields
+                        else sql.SQL("CHAR_LENGTH({})").format(
+                            sql.Identifier(field_name)
+                        )
+                    ),
+                    lower_field=(
+                        sql.Identifier(f"{field_name}_lower")
+                        if prepare_fields
+                        else sql.SQL("LOWER({})").format(sql.Identifier(field_name))
+                    ),
                     query_part=sql.Literal(query_part),
                     field_weight=sql.Literal(field_weight),
                 )
             )
         sql_sub_queries.append(
-            sql.SQL("( {part_scores} * {weight} )").format(
+            sql.SQL("( ( {part_scores} ) * {weight} )").format(
                 part_scores=sql.SQL(" + ").join(sql_sub_query_parts),
                 weight=sql.Literal(
                     current_app.config.get("RELEVANCE_QUOTE_MATCH_MULTIPLIER")
@@ -92,6 +108,30 @@ def contruct_search_query(
         if blacklisted_urls
         else sql.SQL("")
     )
+
+    if prepare_fields:
+        prepared_fields = sql.SQL(", ").join(
+            sql.SQL(
+                "CHAR_LENGTH({field}) AS {field_length}, "
+                "LOWER({field}) AS {lower_field}"
+            ).format(
+                field=sql.Identifier(field["field"]),
+                field_length=sql.Identifier(f"{field['field']}_length"),
+                lower_field=sql.Identifier(f"{field['field']}_lower"),
+            )
+            for field in query_fields
+        )
+        source = sql.SQL(
+            '''"sitemap_urls"
+            CROSS JOIN LATERAL (
+                WITH "prepared_fields" AS MATERIALIZED (
+                    SELECT {prepared_fields}
+                )
+                SELECT * FROM "prepared_fields"
+            ) AS "normalised_fields"'''
+        ).format(prepared_fields=prepared_fields)
+    else:
+        source = sql.Identifier("sitemap_urls")
 
     # Get the web archive domains from the config - this is used to determine if a URL
     # is archived and should have a different relevance weight
@@ -125,7 +165,7 @@ def contruct_search_query(
                         ELSE 1
                     END
                 ) AS "relevance"
-            FROM "sitemap_urls"
+            FROM {source}
             WHERE "url" IS NOT NULL
                 {blacklist_sub_where}
                 {types_sub_query}
@@ -145,6 +185,7 @@ def contruct_search_query(
         LIMIT {limit}
         OFFSET {offset};""",
     ).format(
+        source=source,
         search_sub_query=(
             sql.SQL(" + ").join(sql_sub_queries) if sql_sub_queries else sql.SQL("1")
         ),

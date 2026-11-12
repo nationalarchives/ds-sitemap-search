@@ -18,6 +18,8 @@ psycopg = {extras = ["binary"], version = "^3.3.6"}
 sqlalchemy = "^2.0"
 sentry-sdk = {extras = ["flask"], version = "^2.20.0"}
 tna-utilities = {extras = ["flask"], version = "^1.4.0"}
+gevent = "^26.9.0"
+packaging = "^26.3"
 
 [tool.poetry.group.dev]
 optional = true

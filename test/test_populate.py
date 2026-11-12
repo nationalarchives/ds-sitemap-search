@@ -373,6 +373,112 @@ def test_existing_search_query_reads_model_created_table(ready_db):
     assert results[0]["relevance"] > 0
 
 
+def test_multi_term_search_preserves_scoring_and_pagination(ready_db):
+    with Session(ready_db) as session, session.begin():
+        session.add_all(
+            [
+                SitemapURL(
+                    url="https://example.test/one",
+                    title="Needle needle",
+                    description="NEEDLE!",
+                    body="needle needle",
+                    response_code=200,
+                ),
+                SitemapURL(
+                    url="https://example.test/two",
+                    title="Needle needle",
+                    description="NEEDLE!",
+                    body="needle needle",
+                    response_code=500,
+                ),
+                SitemapURL(url="https://example.test/three", body="NEEDLE"),
+                SitemapURL(url="https://example.test/hidden", title="Needle"),
+                SitemapURL(url="https://example.test/no-match"),
+            ]
+        )
+
+    app = Flask(__name__)
+    app.config.from_object("config.Test")
+    app.config.update(
+        RELEVANCE_TITLE_MATCH_WEIGHT=10,
+        RELEVANCE_DESCRIPTION_MATCH_WEIGHT=3,
+        RELEVANCE_BODY_MATCH_WEIGHT=1,
+        RELEVANCE_URL_MATCH_WEIGHT=2,
+        RELEVANCE_QUOTE_MATCH_MULTIPLIER=5,
+        RELEVANCE_ARCHIVED_WEIGHT=0.25,
+        BLACKLISTED_URLS_SQL_LIKE=["%/hidden"],
+    )
+    with app.app_context():
+        query = contruct_search_query(
+            ["needle", "ne"], {"ne"}, "all", results_per_page=2
+        )
+        next_page = contruct_search_query(
+            ["needle", "ne"], {"ne"}, "all", page=2, results_per_page=2
+        )
+
+    connection = ready_db.raw_connection()
+    try:
+        with connection.cursor(row_factory=dict_row) as cursor:
+            cursor.execute(query)
+            first_results = cursor.fetchall()
+            cursor.execute(next_page)
+            last_results = cursor.fetchall()
+    finally:
+        connection.close()
+
+    results = first_results + last_results
+    assert [row["url"] for row in results] == [
+        "https://example.test/one",
+        "https://example.test/two",
+        "https://example.test/three",
+    ]
+    assert [row["relevance"] for row in results] == [105, 25, 4]
+    assert [row["total_results"] for row in results] == [3, 3, 3]
+
+
+@pytest.mark.parametrize("extra_part", [False, True])
+def test_quoted_match_weight_applies_to_every_field(ready_db, extra_part):
+    with Session(ready_db) as session, session.begin():
+        session.add_all(
+            [
+                SitemapURL(url="https://example.test/title", title="needle"),
+                SitemapURL(
+                    url="https://example.test/description", description="needle"
+                ),
+                SitemapURL(url="https://example.test/body", body="needle"),
+                SitemapURL(url="https://example.test/needle"),
+            ]
+        )
+
+    app = Flask(__name__)
+    app.config.from_object("config.Test")
+    app.config.update(
+        RELEVANCE_TITLE_MATCH_WEIGHT=4,
+        RELEVANCE_DESCRIPTION_MATCH_WEIGHT=4,
+        RELEVANCE_BODY_MATCH_WEIGHT=4,
+        RELEVANCE_URL_MATCH_WEIGHT=4,
+        RELEVANCE_QUOTE_MATCH_MULTIPLIER=5,
+    )
+    parts = ["needle", "unmatched"] if extra_part else ["needle"]
+    with app.app_context():
+        unquoted = contruct_search_query(parts, set(), "all")
+        quoted = contruct_search_query(parts, {"needle"}, "all")
+
+    connection = ready_db.raw_connection()
+    try:
+        with connection.cursor(row_factory=dict_row) as cursor:
+            cursor.execute(unquoted)
+            unquoted_results = cursor.fetchall()
+            cursor.execute(quoted)
+            quoted_results = cursor.fetchall()
+    finally:
+        connection.close()
+
+    assert len(unquoted_results) == len(quoted_results) == 4
+    assert {row["relevance"] for row in unquoted_results} == {6}
+    assert {row["relevance"] for row in quoted_results} == {30}
+
+
 @pytest.mark.parametrize(
     "script, function, args",
     [
