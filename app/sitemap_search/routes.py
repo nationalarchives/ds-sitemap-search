@@ -38,10 +38,6 @@ def index():
     # Remove any asterisks or leading/trailing whitespace
     query = query.replace("*", "").strip()
 
-    # Get the requested types from the query parameters, default to "all" if not provided
-    # or invalid. This is used to filter the results by type, e.g. research guides
-    requested_types = request.args.get("types", "all")
-
     # Get the requested page number, default to 1 if not provided or invalid
     page = (
         int(request.args.get("page"))
@@ -49,6 +45,24 @@ def index():
         else 1
     )
     results_per_page = current_app.config.get("RESULTS_PER_PAGE")
+
+    if query:
+        all_query_parts, quoted_query_parts, stop_words_removed = get_query_parts(query)
+
+        if not all_query_parts:
+            return render_template(
+                "sitemap_search/index.html",
+                q=query,
+                all_query_parts=[],
+                num_query_parts_exceeded=False,
+                stop_words_removed=stop_words_removed,
+                page=page,
+                pages=0,
+                results=[],
+                total_results=0,
+                results_per_page=results_per_page,
+                pagination={},
+            )
 
     # Start a connection to the database and create a cursor
     conn = psycopg.connect(
@@ -60,9 +74,7 @@ def index():
     cur = conn.cursor(row_factory=dict_row)
 
     # If there is a query, we need to search the database
-    if query or requested_types != "all":
-        all_query_parts, quoted_query_parts = get_query_parts(query)
-
+    if query:
         # Get the maximum number of query parts allowed
         max_query_parts = current_app.config.get("MAX_QUERY_PARTS")
 
@@ -72,19 +84,25 @@ def index():
         if len(all_query_parts) > max_query_parts:
             num_query_parts_exceeded = True
             if len(quoted_query_parts) >= max_query_parts:
-                all_query_parts = list(quoted_query_parts)[:max_query_parts]
+                all_query_parts = [
+                    part for part in all_query_parts if part in quoted_query_parts
+                ][:max_query_parts]
                 quoted_query_parts = set(all_query_parts)
             else:
-                all_query_parts = (
-                    list(quoted_query_parts)
-                    + all_query_parts[: max_query_parts - len(quoted_query_parts)]
+                unquoted_query_parts = [
+                    part for part in all_query_parts if part not in quoted_query_parts
+                ]
+                included_query_parts = set(quoted_query_parts).union(
+                    unquoted_query_parts[: max_query_parts - len(quoted_query_parts)]
                 )
+                all_query_parts = [
+                    part for part in all_query_parts if part in included_query_parts
+                ]
 
         # Construct and execute the SQL query
         sql_query = contruct_search_query(
             all_query_parts=all_query_parts,
             quoted_query_parts=quoted_query_parts,
-            requested_types=requested_types,
             page=page,
             results_per_page=results_per_page,
         )
@@ -112,6 +130,7 @@ def index():
             q=query,
             all_query_parts=all_query_parts,
             num_query_parts_exceeded=num_query_parts_exceeded,
+            stop_words_removed=stop_words_removed,
             page=page,
             pages=pages,
             results=results,

@@ -3,31 +3,133 @@ import re
 from flask import current_app
 from psycopg import sql
 
+STOP_WORDS = frozenset(
+    {
+        "a",
+        "an",
+        "and",
+        "are",
+        "as",
+        "at",
+        "be",
+        "been",
+        "being",
+        "but",
+        "by",
+        "can",
+        "could",
+        "did",
+        "do",
+        "does",
+        "doing",
+        "for",
+        "from",
+        "had",
+        "has",
+        "have",
+        "he",
+        "her",
+        "hers",
+        "him",
+        "his",
+        "how",
+        "i",
+        "if",
+        "in",
+        "into",
+        "is",
+        "it",
+        "its",
+        "may",
+        "me",
+        "might",
+        "more",
+        "most",
+        "must",
+        "my",
+        "of",
+        "on",
+        "or",
+        "our",
+        "ours",
+        "she",
+        "should",
+        "so",
+        "than",
+        "that",
+        "the",
+        "their",
+        "theirs",
+        "them",
+        "then",
+        "there",
+        "these",
+        "they",
+        "this",
+        "those",
+        "through",
+        "to",
+        "too",
+        "under",
+        "until",
+        "up",
+        "us",
+        "was",
+        "we",
+        "were",
+        "what",
+        "when",
+        "where",
+        "which",
+        "who",
+        "why",
+        "will",
+        "with",
+        "would",
+        "you",
+        "your",
+    }
+)
+
 
 def get_query_parts(query):
-    # Create an empty set to hold quoted query parts
-    # This is used to give more weight to exact matches in quotes
     quoted_query_parts = set()
+    query_parts = []
+    seen_query_parts = set()
+    stop_words_removed = False
 
-    # Split the query into parts, handling quoted strings separately
-    discected_query = query
-    while quoted_strings := re.search(r"(\"(.*?)\")", discected_query):
-        quoted_query_parts.add(quoted_strings.group(2).lower().strip())
-        discected_query = discected_query.replace(quoted_strings.group(0), "").strip()
+    def add_query_part(part, quoted=False):
+        nonlocal stop_words_removed
+        part = part.lower().strip()
+        if not part:
+            return
+        if part in STOP_WORDS:
+            stop_words_removed = True
+            return
+        if quoted:
+            quoted_query_parts.add(part)
+        if part not in seen_query_parts:
+            seen_query_parts.add(part)
+            query_parts.append(part)
 
-    # Create a set of query parts with quoted and unquoted parts
-    query_parts = quoted_query_parts.union(
-        set(discected_query.replace('"', "").lower().split(" "))
-    )
-    query_parts = [part for part in list(query_parts) if part]
+    query_start = 0
+    for quoted_string in re.finditer(r'"(.*?)"', query):
+        unquoted_query = query[query_start : quoted_string.start()]
+        for part in unquoted_query.replace('"', "").split(" "):
+            add_query_part(part)
+        add_query_part(quoted_string.group(1), quoted=True)
+        query_start = quoted_string.end()
 
-    return query_parts, quoted_query_parts
+    unquoted_query = query[query_start:]
+    for part in unquoted_query.replace('"', "").split(" "):
+        add_query_part(part)
+
+    return query_parts, quoted_query_parts, stop_words_removed
 
 
 def contruct_search_query(
     all_query_parts,
     quoted_query_parts,
-    requested_types,
     page=1,
     results_per_page=12,
 ):
@@ -97,9 +199,6 @@ def contruct_search_query(
             )
         )
 
-    # Add a sub-query to filter by types if requested
-    types_sub_query = sql.SQL("")
-
     blacklisted_urls = current_app.config.get("BLACKLISTED_URLS_SQL_LIKE")
     blacklist_sub_where = (
         sql.SQL("""AND "url" NOT LIKE ALL({blacklisted_url_likes})""").format(
@@ -168,7 +267,6 @@ def contruct_search_query(
             FROM {source}
             WHERE "url" IS NOT NULL
                 {blacklist_sub_where}
-                {types_sub_query}
         )
         SELECT
             "id",
@@ -193,7 +291,6 @@ def contruct_search_query(
             current_app.config.get("RELEVANCE_ARCHIVED_WEIGHT")
         ),
         blacklist_sub_where=blacklist_sub_where,
-        types_sub_query=types_sub_query,
         limit=sql.Literal(results_per_page),
         offset=sql.Literal((page - 1) * results_per_page),
         webarchive_domains=sql.Literal(
