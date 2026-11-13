@@ -53,11 +53,12 @@ def stored(db, url):
         return session.scalar(select(SitemapURL).where(SitemapURL.url == url))
 
 
-def response(status=200, body="<title>Page</title><main>Content</main>"):
+def response(status=200, body="<title>Page</title><main>Content</main>", headers=None):
     result = requests.Response()
     result.status_code = status
     result._content = body.encode()
     result._content_consumed = True
+    result.headers.update(headers or {})
     return result
 
 
@@ -101,6 +102,8 @@ def test_indexing_stores_status_and_preserves_failed_content(
     ready_db, existing, status, monkeypatch
 ):
     url = "https://example.com/"
+    prior_date_added = datetime(2000, 1, 1)
+    prior_date_updated = datetime(2001, 1, 1)
     if existing:
         with Session(ready_db) as session, session.begin():
             session.add(
@@ -110,6 +113,8 @@ def test_indexing_stores_status_and_preserves_failed_content(
                     body="Old body",
                     description="Old description",
                     response_code=200,
+                    date_added=prior_date_added,
+                    date_updated=prior_date_updated,
                 )
             )
     http = Mock()
@@ -126,6 +131,9 @@ def test_indexing_stores_status_and_preserves_failed_content(
     assert entry.response_code == status
     assert entry.date_updated is not None
     assert entry.date_added is not None
+    if existing:
+        assert entry.date_added == prior_date_added
+        assert entry.date_updated > prior_date_updated
     if status == 200:
         assert entry.title == "Page"
         assert entry.body == "Content"
@@ -288,6 +296,7 @@ def test_reindex_errors_retries_missing_and_failed_responses(ready_db, monkeypat
         "https://example.com/missing",
         "https://example.com/client-error",
         "https://example.com/server-error",
+        "https://example.com/redirect",
     }
     with Session(ready_db) as session, session.begin():
         session.add_all(
@@ -313,7 +322,89 @@ def test_reindex_errors_retries_missing_and_failed_responses(ready_db, monkeypat
         assert entry.title == "Recovered"
         assert entry.body == "Fresh"
     assert stored(ready_db, "https://example.com/updated").response_code == 200
-    assert stored(ready_db, "https://example.com/redirect").response_code == 399
+    assert stored(ready_db, "https://example.com/redirect").response_code == 200
+
+
+@pytest.mark.parametrize("destination_exists", [False, True])
+def test_reindex_errors_deletes_only_redirects_to_existing_urls(
+    ready_db, monkeypatch, destination_exists
+):
+    source = "https://example.com/redirect"
+    intermediate_one = "https://example.com/redirect-one"
+    intermediate_two = "https://example.com/redirect-two"
+    destination = "https://example.com/destination"
+    with Session(ready_db) as session, session.begin():
+        session.add(SitemapURL(url=source, response_code=301, title="Redirect"))
+        if destination_exists:
+            session.add(
+                SitemapURL(url=destination, response_code=200, title="Destination")
+            )
+
+    http = Mock()
+    redirects = []
+    for url, location in [
+        (source, intermediate_one),
+        (intermediate_one, intermediate_two),
+        (intermediate_two, destination),
+    ]:
+        redirect = response(301, headers={"Location": location})
+        redirect.url = url
+        redirects.append(redirect)
+    final_response = response()
+    final_response.url = destination
+    final_response.history = redirects
+    http.get.return_value = final_response
+    monkeypatch.setattr(populate.requests, "Session", Mock(return_value=http))
+
+    populate.reindex_errors()
+
+    assert (stored(ready_db, source) is None) is destination_exists
+    if destination_exists:
+        assert stored(ready_db, destination).title == "Destination"
+    else:
+        assert stored(ready_db, source).response_code == 200
+
+
+@pytest.mark.parametrize("destination_exists", [False, True])
+def test_reindex_errors_updates_url_for_redirect_chain_to_client_error(
+    ready_db, monkeypatch, destination_exists
+):
+    source = "https://example.com/redirect"
+    intermediate_one = "https://example.com/redirect-one"
+    intermediate_two = "https://example.com/redirect-two"
+    destination = "https://example.com/missing"
+    with Session(ready_db) as session, session.begin():
+        session.add(SitemapURL(url=source, response_code=301, title="Redirect"))
+        if destination_exists:
+            session.add(
+                SitemapURL(url=destination, response_code=200, title="Destination")
+            )
+
+    redirects = []
+    for url, location in [
+        (source, intermediate_one),
+        (intermediate_one, intermediate_two),
+        (intermediate_two, destination),
+    ]:
+        redirect = response(301, headers={"Location": location})
+        redirect.url = url
+        redirects.append(redirect)
+    final_response = response(404)
+    final_response.url = destination
+    final_response.history = redirects
+
+    http = Mock()
+    http.get.return_value = final_response
+    monkeypatch.setattr(populate.requests, "Session", Mock(return_value=http))
+
+    populate.reindex_errors()
+
+    assert stored(ready_db, source) is None
+    destination_entry = stored(ready_db, destination)
+    assert destination_entry.response_code == 404
+    assert destination_entry.title == (
+        "Destination" if destination_exists else "Redirect"
+    )
 
 
 def test_database_failure_rolls_back_and_is_not_silenced(ready_db):
