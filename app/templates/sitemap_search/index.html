@@ -108,7 +108,9 @@ Search the site
             'attributes': {
               'data-id': result.id,
               'data-relevance': result.relevance,
-              'data-result-position': ((results_per_page * (page - 1)) + loop.index)
+              'data-result-position': ((results_per_page * (page - 1)) + loop.index),
+              'data-last-updated': result.date_updated,
+              'data-response-code': result.response_code or 0,
             }
           }) }}
         </li>

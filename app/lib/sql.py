@@ -245,6 +245,7 @@ def contruct_search_query(
                 "url",
                 "description",
                 "response_code",
+                "date_updated",
                 (
                     (
                         {search_sub_query}
@@ -274,6 +275,7 @@ def contruct_search_query(
             "url",
             "description",
             "response_code",
+            "date_updated",
             "relevance",
             (SELECT COUNT(*) FROM "scored_results" WHERE "relevance" > 0) AS "total_results"
         FROM "scored_results"
