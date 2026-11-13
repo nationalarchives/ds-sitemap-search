@@ -67,7 +67,7 @@ class PageIndexer:
             action = " ADDED " if added else "UPDATED"
             print(f"{progress} [{action} ({response.status_code})] {fixed_url}")
         else:
-            print(f"{progress} [ERROR] {fixed_url} - {response.status_code}")
+            print(f"{progress} [ ERROR  ({response.status_code})] {fixed_url}")
 
     def _get_response(self, fixed_url, progress):
         for attempt in range(MAX_REQUEST_ATTEMPTS):

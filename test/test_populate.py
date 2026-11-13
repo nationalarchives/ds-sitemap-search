@@ -300,8 +300,10 @@ def test_populate_forwards_skip_existing_to_each_sitemap(monkeypatch):
     )
 
 
+@pytest.mark.parametrize("previous_status", [200, 202, 299])
+@pytest.mark.parametrize("new_status", [404, 410])
 def test_reindex_orphaned_urls_retests_only_out_of_sitemap_successes(
-    ready_db, monkeypatch
+    ready_db, monkeypatch, previous_status, new_status
 ):
     orphaned_url = "https://example.com/orphaned"
     sitemap_url = "https://example.com/in-sitemap"
@@ -314,7 +316,7 @@ def test_reindex_orphaned_urls_retests_only_out_of_sitemap_successes(
                     title="Old title",
                     description="Old description",
                     body="Old body",
-                    response_code=200,
+                    response_code=previous_status,
                 ),
                 SitemapURL(url=sitemap_url, response_code=200),
                 SitemapURL(url=failed_url, response_code=404),
@@ -322,7 +324,7 @@ def test_reindex_orphaned_urls_retests_only_out_of_sitemap_successes(
         )
 
     http = Mock()
-    http.get.return_value = response(404)
+    http.get.return_value = response(new_status)
     manager = Mock()
     manager.__enter__ = Mock(return_value=http)
     manager.__exit__ = Mock(return_value=False)
@@ -332,10 +334,61 @@ def test_reindex_orphaned_urls_retests_only_out_of_sitemap_successes(
 
     assert [call.args[0] for call in http.get.call_args_list] == [orphaned_url]
     orphaned_entry = stored(ready_db, orphaned_url)
-    assert orphaned_entry.response_code == 404
+    assert orphaned_entry.response_code == new_status
     assert orphaned_entry.title == "Old title"
     assert orphaned_entry.description == "Old description"
     assert orphaned_entry.body == "Old body"
+
+
+@pytest.mark.parametrize("redirected", [False, True])
+def test_populate_updates_orphaned_202_to_client_error(
+    ready_db, monkeypatch, redirected
+):
+    orphaned_url = "https://example.com/orphaned"
+    sitemap_url = "https://example.com/in-sitemap"
+    destination = "https://example.com/missing" if redirected else orphaned_url
+    prior_updated = datetime(2000, 1, 1)
+    with Session(ready_db) as session, session.begin():
+        session.add(
+            SitemapURL(
+                url=orphaned_url,
+                response_code=202,
+                title="Old title",
+                body="Old body",
+                date_updated=prior_updated,
+            )
+        )
+
+    monkeypatch.setenv("SITEMAPS", "https://example.com/sitemap.xml")
+    monkeypatch.setattr(
+        populate, "get_urls_from_sitemap", Mock(return_value=[sitemap_url])
+    )
+    final_response = response(404)
+    final_response.url = destination
+    if redirected:
+        redirect = response(301, headers={"Location": destination})
+        redirect.url = orphaned_url
+        final_response.history = [redirect]
+    http = Mock()
+    http.get.side_effect = [response(200), final_response]
+    manager = Mock()
+    manager.__enter__ = Mock(return_value=http)
+    manager.__exit__ = Mock(return_value=False)
+    monkeypatch.setattr(populate.requests, "Session", Mock(return_value=manager))
+
+    populate.populate()
+
+    assert [call.args[0] for call in http.get.call_args_list] == [
+        sitemap_url,
+        orphaned_url,
+    ]
+    entry = stored(ready_db, destination)
+    assert entry.response_code == 404
+    assert entry.date_updated > prior_updated
+    assert entry.title == "Old title"
+    assert entry.body == "Old body"
+    if redirected:
+        assert stored(ready_db, orphaned_url) is None
 
 
 def test_reindex_errors_retries_missing_and_failed_responses(ready_db, monkeypatch):
