@@ -33,6 +33,8 @@ Network failures leave the previous code unchanged.
 
 Redirects store the final response code, and skipped URLs are not fetched or updated.
 
+After processing all configured sitemaps, `python populate.py` also rechecks database URLs absent from those sitemaps whose previous response was 2xx (including 202). New error responses update their stored response code and timestamp while preserving page content. Processing a single sitemap does not perform this orphaned-URL pass.
+
 ```sh
 # Populate all pages from sitemaps and update existing entries
 docker compose exec app poetry run python populate.py
