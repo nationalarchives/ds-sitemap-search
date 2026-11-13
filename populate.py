@@ -221,12 +221,40 @@ def process_sitemap(sitemap, skip_existing=False):
         for data in enumerate(urls):
             indexer(data)
     print(f"Finished processing {sitemap}")
+    return urls
 
 
 def populate(skip_existing=False, drop_table=False):
     create_database(drop_table=drop_table)
+    sitemap_urls = set()
     for sitemap in filter(None, os.getenv("SITEMAPS", "").split(",")):
-        process_sitemap(sitemap, skip_existing)
+        sitemap_urls.update(process_sitemap(sitemap, skip_existing))
+    reindex_orphaned_urls(sitemap_urls)
+
+
+def reindex_orphaned_urls(sitemap_urls):
+    sitemap_urls.update({correct_url(url) for url in sitemap_urls})
+    with Session(engine) as session:
+        rows = session.execute(select(SitemapURL.url, SitemapURL.response_code)).all()
+    existing_urls = {url for url, _ in rows}
+    urls_to_retest = [
+        url
+        for url, response_code in rows
+        if response_code is not None
+        and 200 <= response_code < 300
+        and url not in sitemap_urls
+        and correct_url(url) not in sitemap_urls
+    ]
+
+    with requests.Session() as http:
+        indexer = PageIndexer(
+            http,
+            len(urls_to_retest),
+            existing_urls,
+            delete_redirects_to_existing_urls=True,
+        )
+        for data in enumerate(urls_to_retest):
+            indexer(data)
 
 
 def fix_remapped_domains():

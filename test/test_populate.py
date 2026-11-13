@@ -279,7 +279,13 @@ def test_process_creates_database_and_reuses_http_session(db, monkeypatch):
 
 def test_populate_forwards_skip_existing_to_each_sitemap(monkeypatch):
     process_sitemap = Mock()
+    process_sitemap.side_effect = [
+        ["https://example.com/one"],
+        ["https://example.com/two"],
+    ]
     monkeypatch.setattr(populate, "process_sitemap", process_sitemap)
+    reindex_orphaned_urls = Mock()
+    monkeypatch.setattr(populate, "reindex_orphaned_urls", reindex_orphaned_urls)
     monkeypatch.setattr(populate, "create_database", Mock())
     monkeypatch.setenv("SITEMAPS", "https://example.com/one,https://example.com/two")
 
@@ -289,6 +295,47 @@ def test_populate_forwards_skip_existing_to_each_sitemap(monkeypatch):
         call("https://example.com/one", True),
         call("https://example.com/two", True),
     ]
+    reindex_orphaned_urls.assert_called_once_with(
+        {"https://example.com/one", "https://example.com/two"}
+    )
+
+
+def test_reindex_orphaned_urls_retests_only_out_of_sitemap_successes(
+    ready_db, monkeypatch
+):
+    orphaned_url = "https://example.com/orphaned"
+    sitemap_url = "https://example.com/in-sitemap"
+    failed_url = "https://example.com/failed"
+    with Session(ready_db) as session, session.begin():
+        session.add_all(
+            [
+                SitemapURL(
+                    url=orphaned_url,
+                    title="Old title",
+                    description="Old description",
+                    body="Old body",
+                    response_code=200,
+                ),
+                SitemapURL(url=sitemap_url, response_code=200),
+                SitemapURL(url=failed_url, response_code=404),
+            ]
+        )
+
+    http = Mock()
+    http.get.return_value = response(404)
+    manager = Mock()
+    manager.__enter__ = Mock(return_value=http)
+    manager.__exit__ = Mock(return_value=False)
+    monkeypatch.setattr(populate.requests, "Session", Mock(return_value=manager))
+
+    populate.reindex_orphaned_urls({sitemap_url})
+
+    assert [call.args[0] for call in http.get.call_args_list] == [orphaned_url]
+    orphaned_entry = stored(ready_db, orphaned_url)
+    assert orphaned_entry.response_code == 404
+    assert orphaned_entry.title == "Old title"
+    assert orphaned_entry.description == "Old description"
+    assert orphaned_entry.body == "Old body"
 
 
 def test_reindex_errors_retries_missing_and_failed_responses(ready_db, monkeypatch):
@@ -587,6 +634,12 @@ def test_scripts_dispose_engine(monkeypatch, script, function, args):
     monkeypatch.setattr(database, "create_database", Mock())
     if function:
         monkeypatch.setattr(populate, function, Mock())
+    elif script == "populate.py":
+        session = Mock()
+        session.__enter__ = Mock(return_value=session)
+        session.__exit__ = Mock(return_value=False)
+        session.execute.return_value.all.return_value = []
+        monkeypatch.setattr("sqlalchemy.orm.Session", Mock(return_value=session))
     runpy.run_path(str(ROOT / script), run_name="__main__")
     fake_engine.dispose.assert_called_once_with()
 
