@@ -97,12 +97,16 @@ Search the site
       <ul class="tna-container tna-container--nested tna-!--margin-top-m">
         {% for result in results %}
         <li class="tna-column tna-column--full tna-!--margin-bottom-l">
+          {% set href = result.url | correct_url %}
+          {% if href | is_url_archived %}
+            {% set href = 'https://webarchive.nationalarchives.gov.uk/ukgwa/+/' ~ href %}
+          {% endif %}
           {{ tnaCard({
             'supertitle': result_type(result.url, result.response_code or 0),
             'headingLevel': 3,
             'headingSize': 's',
             'title': result.title.replace(', Author at The National Archives blog', '').replace(' - The National Archives blog', '').replace(' - The National Archives Design System', '').replace(' - The National Archives', '') | mark(all_query_parts) | safe if result.title else '[No title]',
-            'href': result.url | correct_url,
+            'href': href,
             'body': ('<p>' ~ (result.description | mark(all_query_parts)) ~ '</p>' if result.description and result.description != '...' else '') ~ '<p><small>' ~ (result.url | correct_url | mark(all_query_parts)) ~ '</small></p>',
             'fullAreaClick': True,
             'attributes': {
