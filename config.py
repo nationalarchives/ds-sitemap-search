@@ -14,6 +14,7 @@ ARCHIVED_URLS = [
     "https://blog.nationalarchives.gov.uk/",
     "https://media.nationalarchives.gov.uk/",
     "https://www.nationalarchives.gov.uk/education/resources/",
+    "https://www.nationalarchives.gov.uk/first-world-war/",
 ]
 
 
