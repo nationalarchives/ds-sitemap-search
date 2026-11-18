@@ -17,15 +17,11 @@
   <p>We are working on making our online catalogue more accessible and inviting.</p>
   {% if query %}
   <p>
-    {# djlint:off #}
-    <a href="/catalogue/search/?q={{ query }}">Search for &quot;{{ query }}&quot; in the new catalogue search</a>
-    {# djlint:on #}
+    <a href="https://beta.nationalarchives.gov.uk/catalogue/search/?q={{ query }}">Search for &quot;{{ query }}&quot; in the new catalogue search</a>
   </p>
   {% else %}
   <p>
-    {# djlint:off #}
-    <a href="/catalogue/">Go to the new catalogue</a>
-    {# djlint:on #}
+    <a href="https://beta.nationalarchives.gov.uk/catalogue/">Go to the new catalogue</a>
   </p>
   {% endif %}
 </div>
