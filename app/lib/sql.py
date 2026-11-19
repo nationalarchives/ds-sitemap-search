@@ -127,6 +127,13 @@ def get_query_parts(query):
     return query_parts, quoted_query_parts, stop_words_removed
 
 
+def blacklisted_url_prefix_where():
+    return sql.SQL("").join(
+        sql.SQL(' AND NOT starts_with("url", {})').format(sql.Literal(prefix))
+        for prefix in current_app.config.get("BLACKLISTED_URLS", [])
+    )
+
+
 def contruct_search_query(
     all_query_parts,
     quoted_query_parts,
@@ -268,6 +275,7 @@ def contruct_search_query(
             FROM {source}
             WHERE "url" IS NOT NULL
                 {blacklist_sub_where}
+                {blacklist_prefix_where}
         )
         SELECT
             "id",
@@ -293,6 +301,7 @@ def contruct_search_query(
             current_app.config.get("RELEVANCE_ARCHIVED_WEIGHT")
         ),
         blacklist_sub_where=blacklist_sub_where,
+        blacklist_prefix_where=blacklisted_url_prefix_where(),
         limit=sql.Literal(results_per_page),
         offset=sql.Literal((page - 1) * results_per_page),
         webarchive_domains=sql.Literal(

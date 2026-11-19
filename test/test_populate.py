@@ -2,7 +2,7 @@ import runpy
 import sys
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import Mock, call
+from unittest.mock import Mock, call, patch
 from uuid import uuid4
 
 import pytest
@@ -14,6 +14,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 import populate
+from app import create_app
 from app.lib import database
 from app.lib.sql import contruct_search_query
 from app.models import SitemapURL
@@ -562,6 +563,81 @@ def test_existing_search_query_reads_model_created_table(ready_db):
     assert results[0]["title"] == "Needle"
     assert results[0]["total_results"] == 2
     assert results[0]["relevance"] > 0
+
+
+@pytest.mark.parametrize("parts", [["needle"], ["needle", "unmatched"]])
+@pytest.mark.parametrize(
+    "prefixes",
+    [[], ["https://example.test/a_%'", "https://example.test/blocked/"]],
+)
+@pytest.mark.parametrize("patterns", [[], ["%/hidden"]])
+def test_search_excludes_literal_url_prefixes(ready_db, parts, prefixes, patterns):
+    urls = [
+        "https://example.test/a_%'",
+        "https://example.test/a_%'/child",
+        "https://example.test/blocked/child",
+        "https://example.test/abc/child",
+        "https://example.test/other/https://example.test/a_%'",
+        "https://example.test/hidden",
+    ]
+    with Session(ready_db) as session, session.begin():
+        session.add_all([SitemapURL(url=url, title="needle") for url in urls])
+
+    app = Flask(__name__)
+    app.config.from_object("config.Test")
+    app.config.update(BLACKLISTED_URLS=prefixes, BLACKLISTED_URLS_SQL_LIKE=patterns)
+    with app.app_context():
+        query = contruct_search_query(parts, set())
+
+    connection = ready_db.raw_connection()
+    try:
+        with connection.cursor(row_factory=dict_row) as cursor:
+            cursor.execute(query)
+            results = cursor.fetchall()
+    finally:
+        connection.close()
+
+    expected = urls[3:] if prefixes else urls
+    if patterns:
+        expected = expected[:-1]
+    assert {row["url"] for row in results} == set(expected)
+    assert {row["total_results"] for row in results} == {len(expected)}
+
+
+def test_search_index_totals_exclude_blacklisted_prefixes(ready_db):
+    with Session(ready_db) as session, session.begin():
+        session.add_all(
+            [
+                SitemapURL(
+                    url="https://example.test/blocked/child",
+                    date_updated=datetime(2024, 1, 1),
+                ),
+                SitemapURL(
+                    url="https://example.test/allowed",
+                    date_updated=datetime(2023, 1, 1),
+                ),
+            ]
+        )
+
+    app = create_app("config.Test")
+    app.config.update(
+        BLACKLISTED_URLS=["https://example.test/blocked/"],
+        BLACKLISTED_URLS_SQL_LIKE=["%/hidden"],
+    )
+    with (
+        patch(
+            "app.sitemap_search.routes.psycopg.connect",
+            return_value=ready_db.raw_connection(),
+        ),
+        patch(
+            "app.sitemap_search.routes.render_template", return_value="Search"
+        ) as render,
+    ):
+        response = app.test_client().get("/search/")
+
+    assert response.status_code == 200
+    assert render.call_args.kwargs["total_results"] == 1
+    assert render.call_args.kwargs["last_updated"] == datetime(2023, 1, 1)
 
 
 def test_multi_term_search_preserves_scoring_and_pagination(ready_db):
