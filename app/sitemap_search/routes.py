@@ -10,7 +10,11 @@ from psycopg.rows import dict_row
 from app.lib.cache import cache
 from app.lib.cache_key_prefix import cache_key_prefix
 from app.lib.pagination import pagination_object
-from app.lib.sql import contruct_search_query, get_query_parts
+from app.lib.sql import (
+    blacklisted_url_prefix_where,
+    contruct_search_query,
+    get_query_parts,
+)
 from app.sitemap_search import bp
 
 
@@ -144,10 +148,12 @@ def index():
                     SELECT COUNT(*) AS total_results,
                         MAX(date_updated) AS last_updated
                     FROM sitemap_urls
-                    WHERE url NOT LIKE ANY({blacklisted_url_likes})""").format(
+                    WHERE url NOT LIKE ANY({blacklisted_url_likes})
+                        {blacklist_prefix_where}""").format(
             blacklisted_url_likes=psycopg.sql.Literal(
                 current_app.config.get("BLACKLISTED_URLS_SQL_LIKE")
-            )
+            ),
+            blacklist_prefix_where=blacklisted_url_prefix_where(),
         )
         cur.execute(sql_query)
         results = cur.fetchall()

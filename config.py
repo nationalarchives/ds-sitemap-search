@@ -13,8 +13,10 @@ DOMAIN_REMAPS = {
 ARCHIVED_URLS = [
     "https://blog.nationalarchives.gov.uk/",
     "https://media.nationalarchives.gov.uk/",
-    "https://www.nationalarchives.gov.uk/education/resources/",
     "https://www.nationalarchives.gov.uk/first-world-war/",
+]
+BLACKLISTED_URLS = [
+    "https://www.nationalarchives.gov.uk/education/resources/",
 ]
 
 
@@ -91,6 +93,18 @@ class Production(Features):
             ]
         )
         if domain
+    ]
+    BLACKLISTED_URLS: ClassVar[list[str]] = [
+        url
+        for url in (
+            BLACKLISTED_URLS
+            + [
+                blacklisted_url
+                for blacklisted_url in os.environ.get("BLACKLISTED_URLS", "").split(",")
+                if blacklisted_url
+            ]
+        )
+        if url
     ]
 
     MAX_QUERY_PARTS: int = int(os.environ.get("MAX_QUERY_PARTS", "12"))
