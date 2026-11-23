@@ -17,6 +17,19 @@ Search the site
 {% endif %}
 {%- endset -%}
 
+{% block head %}
+{{ super() }}
+    <meta name="tna.results.count" content="{{ total_results | default('') }}">
+    <meta name="tna.results.page" content="{{ page | default('') }}">
+    {% set ns = namespace(archived_count = 0) %}
+    {%- for result in results | default([]) %}
+      {% if result.is_archived %}
+        {% set ns.archived_count = ns.archived_count + 1 %}
+      {% endif %}
+    {%- endfor %}
+    <meta name="tna.results.this_page_archived_count" content="{{ ns.archived_count }}">
+{% endblock head %}
+
 {% block skipLink %}
 {% if q %}
 {{ tnaSkipLink({
@@ -97,9 +110,10 @@ Search the site
       <ul class="tna-container tna-container--nested tna-!--margin-top-m">
         {% for result in results %}
         <li class="tna-column tna-column--full tna-!--margin-bottom-l">
-          {% set href = result.url | correct_url %}
-          {% if href | is_url_archived %}
-            {% set href = 'https://webarchive.nationalarchives.gov.uk/ukgwa/+/' ~ href %}
+          {% if result.is_archived %}
+            {% set href = 'https://webarchive.nationalarchives.gov.uk/ukgwa/+/' ~ result.correct_url %}
+          {% else %}
+            {% set href = result.correct_url %}
           {% endif %}
           {{ tnaCard({
             'supertitle': result_type(result.url, result.response_code or 0),
@@ -107,7 +121,7 @@ Search the site
             'headingSize': 's',
             'title': result.title.replace(', Author at The National Archives blog', '').replace(' - The National Archives blog', '').replace(' - The National Archives Design System', '').replace(' - The National Archives', '') | mark(all_query_parts) | safe if result.title else '[No title]',
             'href': href,
-            'body': ('<p>' ~ (result.description | mark(all_query_parts)) ~ '</p>' if result.description and result.description != '...' else '') ~ '<p><small>' ~ (result.url | correct_url | mark(all_query_parts)) ~ '</small></p>',
+            'body': ('<p>' ~ (result.description | mark(all_query_parts)) ~ '</p>' if result.description and result.description != '...' else '') ~ '<p><small>' ~ (result.correct_url | mark(all_query_parts)) ~ '</small></p>',
             'fullAreaClick': True,
             'attributes': {
               'data-id': result.id,
