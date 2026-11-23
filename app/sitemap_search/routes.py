@@ -15,6 +15,7 @@ from app.lib.sql import (
     contruct_search_query,
     get_query_parts,
 )
+from app.lib.urls import correct_url, is_url_archived
 from app.sitemap_search import bp
 
 
@@ -127,6 +128,23 @@ def index():
         # If there are no results and the page is greater than 1, return a 404
         if not results and page > 1:
             return render_template("errors/page-not-found.html")
+
+        # Add the correct URL and archived status to each result
+        results = [
+            {
+                **result,
+                "correct_url": correct_url(result["url"]),
+            }
+            for result in results
+        ]
+        results = [
+            {
+                **result,
+                "is_archived": (is_url_archived(result["correct_url"]))
+                or (result.get("response_code") and result["response_code"] >= 400),
+            }
+            for result in results
+        ]
 
         # Render the template with the results
         return render_template(
