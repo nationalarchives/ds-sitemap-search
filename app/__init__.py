@@ -22,6 +22,16 @@ def create_app(config_class):
     app = Flask(__name__, static_url_path="/search/static")
     app.config.from_object(config_class)
 
+    if proxy_depth := app.config["PROXY_DEPTH"]:
+        from werkzeug.middleware.proxy_fix import ProxyFix
+
+        app.wsgi_app = ProxyFix(
+            app.wsgi_app,
+            x_for=proxy_depth,
+            x_proto=proxy_depth,
+            x_host=proxy_depth,
+        )
+
     if app.config.get("SENTRY_DSN"):
         sentry_sdk.init(
             dsn=app.config.get("SENTRY_DSN"),

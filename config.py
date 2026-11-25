@@ -45,6 +45,8 @@ class Production(Features):
     except Exception:
         current_app.logger.exception("Error reading the version of TNA Frontend")
 
+    PROXY_DEPTH: int = int(os.environ.get("PROXY_DEPTH", "0"))
+
     SECRET_KEY: str = os.environ.get("SECRET_KEY", "")
 
     DEBUG: bool = False
